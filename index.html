@@ -1,0 +1,2880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge Session Launch Command Center V2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1411;
+    --bg2: #101a16;
+    --bg3: #0a100d;
+    --ink: #F1E7D6;
+    --ink-dim: #BDB09A;
+    --ink-faint: #8C8270;
+    --copper: #C6955C;
+    --copper-lt: #E2B884;
+    --copper-dk: #9A6F3E;
+    --ember: #E8743B;
+    --ember-glow: #FF8A4C;
+    --forest: #2C5F5A;
+    --forest-lt: #4FA89B;
+    --mauve: #9B7C8B;
+    --mauve-lt: #C0A2B0;
+    --gold: #D8B968;
+    --surface: rgba(22,34,28,0.72);
+    --surface-solid: #15211c;
+    --surface-2: rgba(241,231,214,0.045);
+    --surface-3: rgba(241,231,214,0.025);
+    --line: rgba(198,149,92,0.20);
+    --line-2: rgba(241,231,214,0.10);
+    --line-warm: rgba(232,116,59,0.30);
+    --shadow: 0 10px 36px rgba(0,0,0,0.45);
+    --shadow-lg: 0 24px 70px rgba(0,0,0,0.6);
+    --glow-copper: 0 0 24px rgba(198,149,92,0.35);
+    --glow-ember: 0 0 22px rgba(232,116,59,0.35);
+    --radius: 16px;
+    --radius-sm: 11px;
+    --serif: 'Cormorant Garamond', 'Hoefler Text', Georgia, serif;
+    --sans: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  button, input, textarea, select { font: inherit; }
+
+  button {
+    min-height: 40px;
+    border: 0;
+    cursor: pointer;
+  }
+
+  a { color: var(--copper-lt); }
+
+  .bg-scene {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: radial-gradient(ellipse 120% 90% at 50% -10%, #16241d 0%, #0d1411 50%, #080d0b 100%);
+  }
+
+  .bg-scene::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 18% 12%, rgba(232,116,59,0.16) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 55% at 85% 22%, rgba(198,149,92,0.14) 0%, transparent 52%),
+      radial-gradient(ellipse 55% 50% at 72% 88%, rgba(44,95,90,0.30) 0%, transparent 55%),
+      radial-gradient(ellipse 45% 55% at 8% 82%, rgba(155,124,139,0.14) 0%, transparent 55%);
+  }
+
+  .bg-scene::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(198,149,92,0.05), rgba(232,116,59,0.04), rgba(44,95,90,0.05), rgba(198,149,92,0.05));
+    background-size: 400% 400%;
+    animation: bgShimmer 16s ease-in-out infinite alternate;
+  }
+
+  @keyframes bgShimmer {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(46px);
+    pointer-events: none;
+    z-index: 0;
+    animation: orbFloat ease-in-out infinite alternate;
+  }
+
+  .orb.one { width: 300px; height: 300px; top: 6%; left: 8%; background: rgba(232,116,59,0.22); animation-duration: 14s; }
+  .orb.two { width: 240px; height: 240px; top: 60%; left: 82%; background: rgba(198,149,92,0.18); animation-duration: 18s; }
+  .orb.three { width: 260px; height: 260px; top: 74%; left: 18%; background: rgba(44,95,90,0.26); animation-duration: 16s; }
+  .orb.four { width: 180px; height: 180px; top: 18%; left: 62%; background: rgba(155,124,139,0.16); animation-duration: 20s; }
+
+  @keyframes orbFloat {
+    0% { transform: translate(0,0) scale(1); opacity: .55; }
+    100% { transform: translate(22px,-24px) scale(1.12); opacity: .85; }
+  }
+
+  .embers {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .ember {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--ember-glow);
+    box-shadow: 0 0 6px 1px rgba(232,116,59,0.8);
+    animation: emberRise linear infinite;
+  }
+
+  @keyframes emberRise {
+    0% { transform: translateY(0) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: .75; }
+    100% { transform: translateY(-100vh) translateX(var(--drift, 0)); opacity: 0; }
+  }
+
+  .shell {
+    position: relative;
+    z-index: 1;
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    padding: 24px 22px 60px;
+  }
+
+  .site-header {
+    padding: 42px 0 24px;
+    text-align: center;
+  }
+
+  .kicker {
+    font-family: var(--mono);
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--copper);
+  }
+
+  h1 {
+    margin: 12px auto 10px;
+    max-width: 820px;
+    font-family: var(--serif);
+    font-size: clamp(2.6rem, 6vw, 4.2rem);
+    line-height: .98;
+    letter-spacing: 0;
+    background: linear-gradient(100deg, var(--copper-lt), var(--ember-glow), var(--gold), var(--mauve-lt), var(--copper));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 26px rgba(232,116,59,0.30));
+    animation: shimmerText 8s ease-in-out infinite alternate;
+  }
+
+  @keyframes shimmerText {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+
+  .promise {
+    max-width: 720px;
+    margin: 0 auto;
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    font-style: italic;
+    color: var(--ink-dim);
+  }
+
+  .meta-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 18px;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    border-radius: 30px;
+    padding: 6px 13px;
+    border: 1px solid rgba(198,149,92,0.25);
+    background: rgba(198,149,92,0.10);
+    color: var(--copper-lt);
+    font-size: .78rem;
+    font-weight: 700;
+  }
+
+  .command-strip {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    margin: 12px 0 18px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: rgba(13,20,17,0.84);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 6px 30px rgba(0,0,0,0.5);
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(112px, 1fr));
+    gap: 8px;
+  }
+
+  .stat {
+    min-height: 76px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    padding: 10px 12px;
+  }
+
+  .stat-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .stat-value {
+    display: block;
+    margin-top: 5px;
+    font-family: var(--mono);
+    font-size: clamp(1.15rem, 2vw, 1.55rem);
+    font-weight: 700;
+    color: var(--copper-lt);
+    line-height: 1.1;
+  }
+
+  .stat-note {
+    display: block;
+    margin-top: 4px;
+    font-size: .75rem;
+    color: var(--ink-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tabbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 9px;
+    margin: 22px 0 24px;
+  }
+
+  .tab-btn,
+  .ghost-btn,
+  .copy-btn,
+  .primary-btn {
+    border-radius: 30px;
+    padding: 9px 16px;
+    font-size: .82rem;
+    font-weight: 700;
+    transition: transform .22s, border-color .22s, background .22s, color .22s, box-shadow .22s;
+  }
+
+  .tab-btn {
+    border: 1px solid var(--line-2);
+    background: var(--surface-2);
+    color: var(--ink-dim);
+  }
+
+  .tab-btn:hover,
+  .tab-btn:focus-visible {
+    color: var(--copper-lt);
+    border-color: var(--copper);
+    transform: translateY(-1px);
+    outline: none;
+  }
+
+  .tab-btn[aria-selected="true"],
+  .primary-btn {
+    color: #1a120a;
+    background: linear-gradient(135deg, var(--copper), var(--copper-dk));
+    border: 1px solid transparent;
+    box-shadow: 0 4px 16px rgba(198,149,92,0.35);
+  }
+
+  .ghost-btn {
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    background: transparent;
+  }
+
+  .ghost-btn:hover,
+  .ghost-btn:focus-visible {
+    color: var(--copper-lt);
+    border-color: var(--copper);
+    background: rgba(198,149,92,0.08);
+    outline: none;
+  }
+
+  .copy-btn {
+    min-height: 34px;
+    padding: 7px 13px;
+    border: 1px solid rgba(198,149,92,0.30);
+    color: var(--copper-lt);
+    background: rgba(198,149,92,0.12);
+    font-size: .76rem;
+  }
+
+  .copy-btn:hover,
+  .copy-btn:focus-visible {
+    background: rgba(198,149,92,0.20);
+    outline: none;
+  }
+
+  .copy-btn.copied {
+    color: #d7eee9;
+    border-color: rgba(79,168,155,0.45);
+    background: rgba(44,95,90,0.35);
+  }
+
+  .panel {
+    display: none;
+    animation: panelIn .34s ease;
+  }
+
+  .panel.active { display: block; }
+
+  @keyframes panelIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .grid-two {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(300px, .65fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .grid-three {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .card {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 15px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(241,231,214,0.05);
+    padding: 23px 25px;
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--copper), var(--ember), var(--gold));
+    box-shadow: 0 0 14px rgba(232,116,59,0.50);
+  }
+
+  .card.forest::before { background: linear-gradient(180deg, var(--forest-lt), var(--forest)); }
+  .card.mauve::before { background: linear-gradient(180deg, var(--mauve-lt), var(--mauve)); }
+  .card.gold::before { background: linear-gradient(180deg, var(--gold), var(--copper)); }
+
+  .section-heading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 30px 0 16px;
+    font-family: var(--serif);
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: .4px;
+    color: var(--ink);
+  }
+
+  .section-heading::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--line), transparent);
+  }
+
+  .card h2,
+  .card h3 {
+    margin: 0 0 8px;
+    font-family: var(--serif);
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .card h2 { font-size: 1.65rem; }
+  .card h3 { font-size: 1.38rem; }
+
+  .muted { color: var(--ink-dim); }
+  .small { font-size: .86rem; }
+  .mono { font-family: var(--mono); }
+
+  .progress-wrap {
+    display: grid;
+    gap: 12px;
+  }
+
+  .progress-line {
+    display: grid;
+    gap: 7px;
+  }
+
+  .progress-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: .72rem;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .bar {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--surface-2);
+  }
+
+  .fill {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--copper), var(--ember-glow), var(--gold));
+    transition: width .9s cubic-bezier(.4,0,.2,1);
+  }
+
+  .day-card {
+    display: grid;
+    gap: 12px;
+  }
+
+  .day-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(198,149,92,0.12);
+  }
+
+  .day-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .day-title strong {
+    font-family: var(--serif);
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  .day-date {
+    font-family: var(--mono);
+    color: var(--copper);
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    border-radius: 20px;
+    padding: 3px 9px;
+    font-family: var(--mono);
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .tag.priority,
+  .tag.required {
+    color: var(--ember-glow);
+    background: rgba(232,116,59,0.14);
+    border: 1px solid rgba(232,116,59,0.40);
+  }
+
+  .tag.bonus,
+  .tag.prep {
+    color: var(--forest-lt);
+    background: rgba(44,95,90,0.14);
+    border: 1px solid rgba(79,168,155,0.34);
+  }
+
+  .task {
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    gap: 11px;
+    align-items: start;
+    padding: 11px 0;
+  }
+
+  .task + .task { border-top: 1px solid rgba(198,149,92,0.08); }
+
+  .task input[type="checkbox"],
+  .slot input[type="checkbox"],
+  .dm-check input[type="checkbox"] {
+    accent-color: var(--copper);
+  }
+
+  .task input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-top: 3px;
+  }
+
+  .task.done .task-copy {
+    opacity: .5;
+    text-decoration: line-through;
+    text-decoration-color: rgba(198,149,92,0.70);
+  }
+
+  .task-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 3px;
+  }
+
+  .task-title strong {
+    font-size: .95rem;
+    color: var(--ink);
+  }
+
+  .task-copy p {
+    margin: 0;
+    color: var(--ink-dim);
+    font-size: .92rem;
+  }
+
+  .task-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    justify-content: flex-end;
+  }
+
+  .slot-grid {
+    grid-column: 2 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+    gap: 7px;
+    margin-top: 2px;
+  }
+
+  .slot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 36px;
+    border: 1px solid var(--line-2);
+    border-radius: 10px;
+    background: var(--surface-2);
+    color: var(--ink-dim);
+    font-family: var(--mono);
+    font-size: .72rem;
+    font-weight: 700;
+  }
+
+  .slot.sent {
+    border-color: rgba(198,149,92,0.50);
+    color: var(--copper-lt);
+    background: rgba(198,149,92,0.13);
+  }
+
+  .notice {
+    border: 1px solid rgba(79,168,155,0.26);
+    border-radius: var(--radius-sm);
+    background: rgba(44,95,90,0.13);
+    padding: 12px 16px;
+    color: var(--ink-dim);
+    font-size: .9rem;
+  }
+
+  .notice b { color: var(--forest-lt); }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .field {
+    display: grid;
+    gap: 6px;
+  }
+
+  label,
+  .field span.label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--copper);
+  }
+
+  input[type="text"],
+  input[type="url"],
+  input[type="number"],
+  textarea,
+  select {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--ink);
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+  }
+
+  textarea {
+    min-height: 86px;
+    resize: vertical;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--copper);
+    box-shadow: 0 0 0 3px rgba(198,149,92,0.18), var(--glow-copper);
+    background: rgba(241,231,214,0.06);
+  }
+
+  .asset-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .export-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .asset-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .asset-card {
+    min-height: 100%;
+  }
+
+  .asset-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    margin: 8px 0 12px;
+  }
+
+  .platform-note {
+    margin: 0 0 12px;
+    border: 1px solid rgba(79,168,155,0.24);
+    border-radius: var(--radius-sm);
+    background: rgba(44,95,90,0.12);
+    color: var(--ink-dim);
+    padding: 10px 12px;
+    font-size: .86rem;
+  }
+
+  .graphic-hook {
+    margin: 0 0 12px;
+    border: 1px solid rgba(198,149,92,0.28);
+    border-radius: var(--radius-sm);
+    background: rgba(198,149,92,0.10);
+    color: var(--copper-lt);
+    padding: 11px 13px;
+    font-family: var(--serif);
+    font-size: 1.08rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .asset-body {
+    white-space: pre-wrap;
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-sm);
+    background: rgba(10,16,13,0.36);
+    padding: 13px 14px;
+    color: var(--ink);
+    font-size: .92rem;
+    line-height: 1.56;
+    max-height: 370px;
+    overflow: auto;
+  }
+
+  .asset-subhead {
+    margin: 14px 0 7px;
+    font-family: var(--mono);
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--copper);
+  }
+
+  .image-prompt {
+    white-space: pre-wrap;
+    border: 1px solid rgba(79,168,155,0.26);
+    border-radius: var(--radius-sm);
+    background: rgba(44,95,90,0.13);
+    padding: 12px 14px;
+    color: var(--ink-dim);
+    font-size: .86rem;
+    line-height: 1.55;
+    max-height: 250px;
+    overflow: auto;
+  }
+
+  .asset-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .status-select {
+    max-width: 170px;
+    min-height: 36px;
+    padding: 7px 10px;
+    font-size: .82rem;
+    color: var(--ink);
+    background: var(--surface-solid);
+    border-color: var(--line);
+    color-scheme: dark;
+  }
+
+  .status-select option {
+    color: var(--ink);
+    background: var(--surface-solid);
+  }
+
+  .dm-set {
+    display: grid;
+    gap: 10px;
+  }
+
+  .dm-row {
+    display: grid;
+    grid-template-columns: 42px minmax(120px, 1fr) repeat(3, minmax(64px, 78px)) minmax(150px, 1.2fr);
+    gap: 8px;
+    align-items: center;
+    padding: 8px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+  }
+
+  .dm-row.head {
+    background: transparent;
+    border-color: transparent;
+    color: var(--ink-faint);
+    font-family: var(--mono);
+    font-size: .64rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .dm-index {
+    font-family: var(--mono);
+    font-weight: 700;
+    color: var(--copper-lt);
+  }
+
+  .dm-check {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    min-height: 36px;
+    border-radius: 9px;
+    color: var(--ink-dim);
+    font-size: .76rem;
+  }
+
+  .collapsible {
+    margin-bottom: 12px;
+  }
+
+  .collapsible-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--ink);
+    padding: 15px 19px;
+    font-family: var(--serif);
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-align: left;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .collapsible-trigger:hover,
+  .collapsible-trigger:focus-visible {
+    border-color: rgba(198,149,92,0.45);
+    outline: none;
+  }
+
+  .arrow {
+    color: var(--copper);
+    font-family: var(--mono);
+    font-size: .9rem;
+    transition: transform .2s;
+  }
+
+  .collapsible-trigger[aria-expanded="true"] .arrow { transform: rotate(180deg); }
+
+  .collapsible-body {
+    display: none;
+    margin-top: -10px;
+    padding: 25px 22px 18px;
+    border: 1px solid var(--line);
+    border-top: 0;
+    border-radius: 0 0 var(--radius) var(--radius);
+    background: rgba(16,26,22,0.62);
+  }
+
+  .collapsible-body.open { display: block; }
+
+  .quote-block {
+    margin: 12px 0;
+    padding: 14px 16px;
+    border-left: 3px solid var(--copper);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    background: rgba(198,149,92,0.06);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 1.05rem;
+    font-style: italic;
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    z-index: 40;
+    max-width: min(520px, calc(100% - 28px));
+    transform: translateX(-50%) translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    border: 1px solid var(--copper);
+    border-radius: 30px;
+    background: rgba(15,23,19,0.96);
+    color: var(--copper-lt);
+    box-shadow: var(--shadow);
+    padding: 11px 22px;
+    font-weight: 700;
+    transition: opacity .25s, transform .25s;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .footer {
+    margin-top: 34px;
+    padding: 22px 0 0;
+    border-top: 1px solid var(--line);
+    color: var(--ink-dim);
+    text-align: center;
+    font-size: .82rem;
+  }
+
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 16px;
+    margin: 8px 0;
+  }
+
+  @media (max-width: 980px) {
+    .stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-two { grid-template-columns: 1fr; }
+    .asset-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 700px) {
+    body { font-size: 14px; }
+    .shell { padding: 16px 14px 48px; }
+    .site-header { padding-top: 28px; }
+    .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-three,
+    .field-grid { grid-template-columns: 1fr; }
+    .card { padding: 20px 18px; }
+    .task { grid-template-columns: 24px 1fr; }
+    .task-actions { grid-column: 2; justify-content: flex-start; }
+    .slot-grid { grid-column: 1 / -1; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); }
+    .dm-row { grid-template-columns: 34px 1fr; }
+    .dm-row.head { display: none; }
+    .dm-check { justify-content: flex-start; }
+    .dm-row input[type="text"] { grid-column: 2; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .001s !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+    .ember,
+    .orb { display: none; }
+    .fill { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-scene" aria-hidden="true"></div>
+<div class="orb one" aria-hidden="true"></div>
+<div class="orb two" aria-hidden="true"></div>
+<div class="orb three" aria-hidden="true"></div>
+<div class="orb four" aria-hidden="true"></div>
+<div class="embers" id="embers" aria-hidden="true"></div>
+
+<div class="shell">
+  <header class="site-header">
+    <div class="kicker">Launch Command Center</div>
+    <h1>The Forge Session</h1>
+    <p class="promise">In one session, you walk away knowing exactly who you help, what your work actually does for them, and how to say it so the right people stop scrolling and start buying.</p>
+    <div class="meta-row">
+      <span class="pill">$97 public</span>
+      <span class="pill">$47 SFF members</span>
+      <span class="pill">40 minute Zoom</span>
+      <span class="pill">July 2 to July 15, 2026</span>
+    </div>
+  </header>
+
+  <div class="command-strip" aria-live="polite">
+    <div class="stat-grid" id="top-stats"></div>
+  </div>
+
+  <nav class="tabbar" role="tablist" aria-label="Command center sections">
+    <button class="tab-btn" role="tab" aria-selected="true" aria-controls="panel-today" id="tab-today" data-tab="today">Today</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-runway" id="tab-runway" data-tab="runway">Runway</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-content" id="tab-content" data-tab="content">Post Bank</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-dms" id="tab-dms" data-tab="dms">DM Tracker</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-metrics" id="tab-metrics" data-tab="metrics">Metrics</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-reference" id="tab-reference" data-tab="reference">Reference</button>
+  </nav>
+
+  <main>
+    <section class="panel active" id="panel-today" role="tabpanel" aria-labelledby="tab-today">
+      <div class="grid-two">
+        <div id="today-primary"></div>
+        <aside id="today-side"></aside>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-runway" role="tabpanel" aria-labelledby="tab-runway">
+      <div class="notice"><b>Runway view:</b> this is the full launch map with corrected weekday labels. DM tasks include the exact number of slots so they feel like real actions instead of one broad reminder.</div>
+      <div id="runway-list"></div>
+    </section>
+
+    <section class="panel" id="panel-content" role="tabpanel" aria-labelledby="tab-content">
+      <div class="card">
+        <h2>Batch-Built Post Bank</h2>
+        <p class="muted">Use this tab to build the whole runway in one sweep. Skool is limited to July 2, July 8, and July 14. Instagram/Facebook captions follow your caption rules: different visual hook, early lazy CTA, natural SEO keywords, main CTA before secondary CTA, bonus value, @SoulForgedFounders follow tag, and hashtags.</p>
+        <div class="asset-toolbar">
+          <div class="filter-row" id="asset-filters"></div>
+          <div class="export-actions">
+            <button class="ghost-btn" data-copy-all-assets>Copy Visible Bank</button>
+            <button class="ghost-btn" data-copy-full-bank>Copy Full Bank</button>
+            <button class="primary-btn" data-download-post-bank>Download Text File</button>
+          </div>
+        </div>
+      </div>
+      <div class="asset-grid" id="asset-grid"></div>
+    </section>
+
+    <section class="panel" id="panel-dms" role="tabpanel" aria-labelledby="tab-dms">
+      <div class="grid-two">
+        <div id="dm-sets"></div>
+        <aside class="card forest">
+          <h2>DM Scripts</h2>
+          <p class="muted">These are meant to start real conversations. Track the person, sent status, reply, booking, and follow-up note in one place.</p>
+          <div class="quote-block" id="warm-dm-script"></div>
+          <div class="quote-block" id="follow-dm-script"></div>
+          <button class="copy-btn" data-copy-dm-scripts>Copy Both Scripts</button>
+        </aside>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-metrics" role="tabpanel" aria-labelledby="tab-metrics">
+      <div class="grid-two">
+        <div>
+          <div class="card">
+            <h2>Launch Metrics</h2>
+            <p class="muted">Update these once. The top dashboard, countdown language, and content placeholders will use the same numbers.</p>
+            <div class="field-grid" id="metric-fields"></div>
+          </div>
+          <div class="card gold">
+            <h2>Priority vs Bonus Progress</h2>
+            <div class="progress-wrap" id="metric-progress"></div>
+          </div>
+        </div>
+        <aside class="card mauve">
+          <h2>Links and Status</h2>
+          <p class="muted">Add your real booking link and community link here when ready. Copy buttons and footer links will pick them up.</p>
+          <div class="field-grid" id="link-fields"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-reference" role="tabpanel" aria-labelledby="tab-reference">
+      <div id="reference-sections"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <strong>Soul-Forged Founders</strong> launch artifact for The Forge Session.
+    <div class="footer-links">
+      <a href="#panel-metrics" id="footer-skool-link">SFF Skool Community</a>
+      <a href="https://www.sunnysink.com/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>
+      <a href="https://www.sunnysink.com/terms-and-conditions" target="_blank" rel="noopener">Terms and Conditions</a>
+    </div>
+    <div>Copyright 2026 S Sink Coaching. PO Box 1651, Gillette, WY 82717-1651.</div>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const STORAGE_KEY = "forgeSessionCommandCenterV2";
+  const DAY_MS = 1000 * 60 * 60 * 24;
+
+  const dmScripts = {
+    warm: "Hey [name], I just opened something I think would be perfect for where you are. It is a 40 minute Forge Session where we clarify who you help, what your work actually changes for them, and how to say it in words that make the right people lean in. Want me to send you the details?",
+    follow: "I saw you engaged with [post/topic], and I wondered if this was hitting close to home. I have a few Forge Session bonus spots left, and I think this could help you get the language out of your head and into something you can actually use. Want the details?"
+  };
+
+  const dmSets = [
+    { id: "warm-dms", title: "Warm DM Sprint", target: 15, due: "Day 1", script: dmScripts.warm },
+    { id: "followup-dms", title: "Engaged Lead Follow-Ups", target: 10, due: "Day 9", script: dmScripts.follow }
+  ];
+
+  const days = [
+    {
+      day: 1, iso: "2026-07-02", date: "Thu 7/2", phase: "Phase 1: Launch", badge: "Launch",
+      tasks: [
+        { id: "d1-skool", type: "priority", title: "Publish and pin the Skool launch announcement", asset: "skool-launch", detail: "Open the offer, name the bonus, explain how to book, and pin the post. This is Skool touch 1 of 3." },
+        { id: "d1-dms", type: "priority", title: "Send 15 warm DMs", dmSet: "warm-dms", detail: "Use the DM tracker below. Each slot is one real person, one real invitation." },
+        { id: "d1-email", type: "bonus", title: "Send launch email to business segment", asset: "email-launch", detail: "Send if the list is ready. If the list needs more time, move it to Day 6 and keep the launch moving." },
+        { id: "d1-ig", type: "bonus", title: "Cross-post announcement to Instagram", asset: "ig-launch", detail: "Use the launch post or Content Starter 1 with the Forge Session CTA." }
+      ]
+    },
+    {
+      day: 2, iso: "2026-07-03", date: "Fri 7/3", phase: "Phase 1: Launch",
+      tasks: [
+        { id: "d2-testimonial", type: "priority", title: "Post Debbie testimonial on Instagram/Facebook", asset: "debbie-testimonial", detail: "Frame it around what 40 minutes can do, then remind people that the first 5 bookings get the bonus." },
+        { id: "d2-email-backup", type: "bonus", title: "Send launch email if it still needs to go out", asset: "email-launch", detail: "Same email as Day 1. Send it today if needed." }
+      ]
+    },
+    {
+      day: 3, iso: "2026-07-04", date: "Sat 7/4", phase: "Phase 1: Launch",
+      tasks: [
+        { id: "d3-story", type: "priority", title: "Light-touch Instagram Story", asset: "ig-story-light", detail: "Holiday-friendly reminder: The Forge Session is open and bonus spots are available." }
+      ]
+    },
+    {
+      day: 4, iso: "2026-07-05", date: "Sun 7/5", phase: "Phase 2: Teach and Build Authority",
+      tasks: [
+        { id: "d4-teaching", type: "priority", title: "Instagram/Facebook teaching post on transformation language", asset: "teaching-transform", detail: "Use an example of a practitioner finding more specific language and explain why it works." }
+      ]
+    },
+    {
+      day: 5, iso: "2026-07-06", date: "Mon 7/6", phase: "Phase 2: Teach and Build Authority",
+      tasks: [
+        { id: "d5-reel", type: "priority", title: "Story or Reel: your messaging evolution", asset: "reel-messaging-shift", detail: "One take, 60 to 90 seconds. Connect the moment your transformation language clicked to the Forge Session." },
+        { id: "d5-youtube-prep", type: "prep", title: "Film YouTube 1 while the story is warm", asset: "youtube-transform", detail: "Bank it for Day 7, Day 8, or Day 11." }
+      ]
+    },
+    {
+      day: 6, iso: "2026-07-07", date: "Tue 7/7", phase: "Phase 2: Teach and Build Authority",
+      tasks: [
+        { id: "d6-email", type: "priority", title: "Email 2: what happens in 40 minutes", asset: "email-session-walkthrough", detail: "Walk them through the session and include Debbie's clarity line." },
+        { id: "d6-fit-post", type: "bonus", title: "Instagram/Facebook fit-check caption", asset: "ig-fit-post", detail: "Use fit statements as an Instagram/Facebook caption and keep the Skool room quiet until July 8." }
+      ]
+    },
+    {
+      day: 7, iso: "2026-07-08", date: "Wed 7/8", phase: "Phase 2: Teach and Build Authority",
+      tasks: [
+        { id: "d7-objection", type: "priority", title: "Skool midpoint fit-check post", asset: "fit-post", detail: "Use Debbie's line as the closer. This is Skool touch 2 of 3." },
+        { id: "d7-youtube", type: "bonus", title: "Publish YouTube if filmed", asset: "youtube-transform", detail: "If filming still needs time, skip it and keep moving." }
+      ]
+    },
+    {
+      day: 8, iso: "2026-07-09", date: "Thu 7/9", phase: "Phase 3: Expand and Push",
+      tasks: [
+        { id: "d8-email", type: "priority", title: "Email 3 and HPTS bridge email", asset: "email-debbie-bridge", detail: "Lead with Debbie's story and remind people how many bonus spots remain." },
+        { id: "d8-authority", type: "bonus", title: "Instagram/Facebook authority post about the $220K messaging shift", asset: "authority-post", detail: "Teach from proof. Add personal specifics before publishing." }
+      ]
+    },
+    {
+      day: 9, iso: "2026-07-10", date: "Fri 7/10", phase: "Phase 3: Expand and Push",
+      tasks: [
+        { id: "d9-followups", type: "priority", title: "Send 10 engaged-lead follow-ups", dmSet: "followup-dms", detail: "Follow up with people who engaged with launch content and have yet to book." },
+        { id: "d9-faq", type: "bonus", title: "Instagram Story FAQ", asset: "faq-story", detail: "Answer length, prep, and fit questions in quick story frames." }
+      ]
+    },
+    {
+      day: 10, iso: "2026-07-11", date: "Sat 7/11", phase: "Phase 3: Expand and Push",
+      tasks: [
+        { id: "d10-countdown", type: "priority", title: "Instagram/Facebook bonus countdown post", asset: "bonus-countdown", detail: "Name the bonus, show how many spots remain, and invite them to book." },
+        { id: "d10-ig", type: "bonus", title: "Repurpose countdown to Instagram", asset: "bonus-countdown", detail: "Use the same core copy or Debbie pull quote as a graphic." }
+      ]
+    },
+    {
+      day: 11, iso: "2026-07-12", date: "Sun 7/12", phase: "Phase 4: Close",
+      tasks: [
+        { id: "d11-youtube", type: "priority", title: "Publish whichever YouTube is ready", asset: "youtube-transform", detail: "Transformation language or your $220K story. End with a clear Forge Session CTA." },
+        { id: "d11-social-reframe", type: "bonus", title: "Reframe YouTube for Instagram/Facebook", asset: "youtube-social-reframe", detail: "Turn the video into a social teaching caption." }
+      ]
+    },
+    {
+      day: 12, iso: "2026-07-13", date: "Mon 7/13", phase: "Phase 4: Close",
+      tasks: [
+        { id: "d12-light", type: "priority", title: "Low-effort Story or Reel", asset: "light-reminder", detail: "Reshare a testimonial, bonus reminder, or behind-the-scenes session moment." }
+      ]
+    },
+    {
+      day: 13, iso: "2026-07-14", date: "Tue 7/14", phase: "Phase 4: Close",
+      tasks: [
+        { id: "d13-email", type: "priority", title: "Email 4: the cost of vague messaging", asset: "urgency-email", detail: "Frame what clarity unlocks and remind them about the bonus." },
+        { id: "d13-debbie-thread", type: "priority", title: "Skool final gentle reminder", asset: "debbie-reframe", detail: "Thread Debbie's testimonial with a fresh implementation angle. This is Skool touch 3 of 3." }
+      ]
+    },
+    {
+      day: 14, iso: "2026-07-15", date: "Wed 7/15", phase: "Phase 4: Close", badge: "Last Call",
+      tasks: [
+        { id: "d14-lastcall", type: "priority", title: "Final email + Instagram/Facebook close", asset: "last-call", detail: "Last call for the bonus. If all 5 are claimed, pivot to a value and testimonial close outside Skool." }
+      ]
+    },
+    {
+      day: "Setup", iso: "", date: "Before first booking", phase: "Delivery Readiness",
+      tasks: [
+        { id: "pre-sop", type: "required", title: "Create post-session follow-up SOP", asset: "delivery-sop", detail: "Include testimonial ask, bonus delivery, and next-step invitation." },
+        { id: "pre-testimonial", type: "required", title: "Template testimonial request", asset: "testimonial-request", detail: "Make it easy to ask right after the session." },
+        { id: "pre-turnaround", type: "required", title: "Confirm 48-business-hour bonus workflow", asset: "delivery-sop", detail: "Know where the 10 posts will be created, stored, and delivered." },
+        { id: "pre-segment", type: "bonus", title: "Pull business-interest email segment count", detail: "Do this before Day 8 so the bridge email is grounded." },
+        { id: "pre-home", type: "bonus", title: "Decide permanent Forge Session home", detail: "Site page, pinned Skool post, or link in bio." }
+      ]
+    }
+  ];
+
+  const assets = [
+    {
+      id: "skool-launch", channel: "Skool", day: "Day 1", type: "Launch", title: "Skool Launch Announcement",
+      body: `The Forge Session is open.
+
+This is for the spiritual business owner who knows her work changes people, but still feels herself reaching for generic language when it is time to explain what she does.
+
+In 40 minutes, we will clarify:
+
+Who you help
+What your work actually changes for them
+The words that make the right people recognize themselves
+Your cleanest next message, post, or offer angle
+
+You will leave with language you can use immediately.
+
+For the first 5 people who book, I am adding 10 done-for-you social media posts built from the messaging we create in your session. Each one includes a graphic hook, caption, and ChatGPT image prompt.
+
+Public price: $97
+SFF member price: $47
+
+Bonus spots left: {{bonusLeft}} of 5
+
+If you want my eyes on your message, book your Forge Session here:
+{{bookingLink}}`
+    },
+    {
+      id: "email-launch", channel: "Email", day: "Day 1 or 2", type: "Launch", title: "Email 1: The Forge Session Is Open",
+      body: `Subject: Your message can get clearer in 40 minutes
+
+The Forge Session is open.
+
+This is a private 40 minute Zoom session for spiritual business owners who know their work is powerful, but keep getting stuck when it is time to explain it clearly.
+
+We will pull the transformation out of your work and turn it into language you can actually use.
+
+The kind of language that helps your ideal clients hear:
+
+This is for me.
+She understands where I am.
+This is the next step I have been looking for.
+
+You will leave with clarity on who you help, what your work changes for them, and how to say it in your content or offer language.
+
+For the first 5 bookings, I am adding a launch bonus:
+
+10 done-for-you social media posts built from the message we create together. Each post includes a graphic hook, full caption, and image prompt.
+
+Public price: $97
+SFF member price: $47
+
+Bonus spots left: {{bonusLeft}} of 5
+
+Book your Forge Session here:
+{{bookingLink}}
+
+Sunny`
+    },
+    {
+      id: "ig-launch", channel: "Instagram", day: "Day 1", type: "Announcement", title: "Instagram Launch Caption",
+      body: `Your content can be true and still miss the person who needs it.
+
+Save this if your content has felt too vague lately.
+
+The Forge Session is open.
+
+It is a 40 minute private session where we clarify who you help, what your work actually changes, and how to say it in words that make the right people stop scrolling.
+
+This is for spiritual business owners, tarot readers, coaches, healers, and practitioners who are tired of circling the same sentence:
+
+I know what I do.
+I know it works.
+I keep circling the words.
+
+That is what we fix.
+
+The first 5 people who book also get 10 done-for-you social media posts built from the message we create together.
+
+Book The Forge Session through the link in bio:
+{{bookingLink}}
+
+Bonus tip: if your sentence could apply to 500 other practitioners, it is asking for more specificity.
+
+DM me FORGE if you want me to send the details.
+
+Follow @SoulForgedFounders for intuitive business strategy, offer clarity, and messaging that serves the soul of your work.
+
+#SpiritualEntrepreneur #SoulLedBusiness #MessagingStrategy #OfferClarity #SoulForgedFounders`
+    },
+    {
+      id: "debbie-testimonial", channel: "Instagram/Facebook", day: "Day 2", type: "Proof", title: "Debbie Testimonial Post",
+      body: `This is what 40 minutes can do.
+
+Debbie booked a Forge Session because she wanted more clarity on her community and her offer.
+
+She walked away with insight, ideas, and language she could start implementing right away.
+
+Her words:
+
+"I came away with so much insight and ideas."
+
+"Sunny has SO much experience that she brings, I highly recommend booking this."
+
+"If you are in doubt, need more help, stuck with something, book a session."
+
+That is the work.
+
+We take the swirl in your head and turn it into grounded language you can use in your content, offer, and next invitation.
+
+The first 5 Forge Session bookings get the launch bonus: 10 done-for-you social media posts built from the message we create together.
+
+Bonus spots left: {{bonusLeft}} of 5
+
+Book here:
+{{bookingLink}}`,
+      socialBody: `Your client is looking for the sentence that makes her stop.
+
+Save this for the next time your content feels too broad.
+
+Debbie booked a Forge Session because she wanted clearer language for her community and her offer.
+
+She left with insight, ideas, and words she could actually use.
+
+That matters because message clarity is not abstract.
+
+It changes the way you write.
+It changes the way you explain your offer.
+It changes how quickly the right person understands what your work can do for her.
+
+For spiritual business owners, tarot readers, coaches, healers, and practitioners, vague language can quietly flatten the most powerful parts of your work.
+
+The Forge Session is where we pull the real transformation into words.
+
+Book your Forge Session here:
+{{bookingLink}}
+
+Bonus tip: save your client feedback in one place. The exact words people use after working with you are often the beginning of your strongest messaging strategy.
+
+DM me FORGE if you want the details sent over.
+
+Follow @SoulForgedFounders for soul-led business strategy, offer clarity, content marketing, and messaging that actually names the shift.
+
+#SpiritualEntrepreneur #SoulLedBusiness #MessagingStrategy #OfferClarity #ContentMarketing`
+    },
+    {
+      id: "ig-story-light", channel: "Instagram Story", day: "Day 3", type: "Light Reminder", title: "July 4 Story Frames",
+      body: `Frame 1:
+The Forge Session is open.
+
+Frame 2:
+40 minutes to clarify who you help, what your work changes, and how to say it clearly.
+
+Frame 3:
+First 5 bookings get 10 done-for-you social posts built from your session messaging.
+
+Frame 4:
+Bonus spots left: {{bonusLeft}} of 5
+Reply FORGE and I will send the details.`
+    },
+    {
+      id: "teaching-transform", channel: "Instagram/Facebook", day: "Day 4", type: "Teaching", title: "Transformation Language Teaching Post",
+      body: `The strongest message usually starts with the shift your work creates.
+
+Your ideal client is listening beyond your modality.
+
+She is looking for language that makes her feel seen.
+
+There is a difference between:
+
+"I do energy work"
+
+and
+
+"I help overwhelmed empaths stop absorbing everyone else's energy so they can finally trust their own."
+
+There is a difference between:
+
+"I read tarot"
+
+and
+
+"I help new tarot readers turn their intuition into a practice that feels grounded, confident, and real."
+
+Specificity creates recognition.
+
+Recognition creates trust.
+
+Trust makes the next step feel natural.
+
+This is the work we do inside The Forge Session.
+
+We pull the transformation out of your work and turn it into language you can use in your content, offers, and conversations.
+
+Book The Forge Session here:
+{{bookingLink}}`,
+      socialBody: `Your modality is not always the first thing your client needs to hear.
+
+Save this before you write your next post.
+
+Your future client is listening for the shift.
+
+There is a difference between:
+
+"I do energy work"
+
+and
+
+"I help overwhelmed empaths stop absorbing everyone else's energy so they can finally trust their own."
+
+There is a difference between:
+
+"I read tarot"
+
+and
+
+"I help new tarot readers turn their intuition into a practice that feels grounded, confident, and real."
+
+Specificity creates recognition.
+
+Recognition creates trust.
+
+Trust makes the next step feel natural.
+
+That is what we work on inside The Forge Session.
+
+Book your Forge Session here:
+{{bookingLink}}
+
+Bonus tip: look at your last three posts. If your ideal client needs a clearer signal, your next layer is specificity.
+
+DM me FORGE if you want the booking details.
+
+Follow @SoulForgedFounders for soul-led business strategy, spiritual business messaging, offer clarity, and content marketing that names the real shift.
+
+#SpiritualEntrepreneur #SoulLedBusiness #MessagingStrategy #OfferClarity #ContentMarketing`
+    },
+    {
+      id: "reel-messaging-shift", channel: "Reel + Story", day: "Day 5", type: "Personal Proof", title: "Your Messaging Evolution Reel Prompt",
+      body: `Use this as a talking outline. Add your real details before recording.
+
+Opening:
+"The moment I found my transformation language, everything in my business got easier to explain."
+
+Beat 1:
+Name the before. What were you saying before your language clicked? What felt vague, heavy, or hard to repeat?
+
+Beat 2:
+Name the shift. What sentence, phrase, offer angle, or client insight changed the way you explained your work?
+
+Beat 3:
+Name what became possible. Connect this to your real business proof, including the $220K context if it feels relevant and grounded.
+
+Beat 4:
+Bridge to the viewer. If your work is powerful but your message is still fuzzy, that is exactly what The Forge Session is for.
+
+CTA:
+DM me FORGE or book your session here:
+{{bookingLink}}`
+    },
+    {
+      id: "email-session-walkthrough", channel: "Email", day: "Day 6", type: "Walkthrough", title: "Email 2: What Happens In 40 Minutes",
+      body: `Subject: What actually happens in a Forge Session
+
+A Forge Session is 40 minutes of focused message work.
+
+You can arrive with a messy offer, a half-written sales page, a caption draft, or the swirl of words that keeps circling in your head.
+
+You bring what you have.
+
+I listen for the transformation inside your work.
+
+Then we shape it into language you can use.
+
+In the session, we clarify:
+
+Who your work is really for
+What they are struggling to name
+What your work helps them shift
+The sentence that makes your work easier to explain
+The next piece of content, offer language, or invitation to create
+
+Debbie booked because she wanted clarity on her community and her offer.
+
+She walked away saying she had so much insight and so many ideas she was ready to start implementing.
+
+That is the point.
+
+A message you can move with.
+
+The first 5 bookings get 10 done-for-you social media posts based on the language from the session.
+
+Bonus spots left: {{bonusLeft}} of 5
+
+Book your session here:
+{{bookingLink}}
+
+Sunny`
+    },
+    {
+      id: "ig-fit-post", channel: "Instagram/Facebook", day: "Day 6", type: "Fit + Objections", title: "Instagram/Facebook Fit-Check Caption",
+      body: `Your message can be true and still too broad.
+
+Save this before you rewrite your bio again.
+
+The Forge Session is for the spiritual business owner whose work is clear in her body, but fuzzy in her words.
+
+You are a fit if your clients get real shifts, but your posts still feel broad.
+
+You are a fit if you keep rewriting your bio, offer description, or caption because nothing feels precise enough.
+
+You are a fit if you have a method, modality, reading style, healing process, or coaching approach that works, and you want the language to finally match it.
+
+This is where we pull the transformation out of your work and turn it into words you can use.
+
+Book The Forge Session here:
+{{bookingLink}}
+
+Bonus tip: if your current "I help" sentence could describe ten different practitioners, it needs your fingerprints on it.
+
+DM me FORGE if you want me to send the details.
+
+Follow @SoulForgedFounders for spiritual business strategy, messaging strategy, offer clarity, and content marketing for soul-led founders.
+
+#SpiritualEntrepreneur #SoulLedBusiness #MessagingStrategy #OfferClarity #ContentMarketing`
+    },
+    {
+      id: "fit-post", channel: "Skool", day: "Day 7", type: "Fit + Objections", title: "Skool Midpoint Fit-Check",
+      body: `Thinking about booking a Forge Session?
+
+Here is who this is really for.
+
+You are a fit if your work is clear in your body, but unclear in your words.
+
+You are a fit if your clients get real shifts, but your posts still feel too broad.
+
+You are a fit if you keep rewriting the same bio, offer description, or caption because nothing feels precise enough.
+
+You are a fit if you have a method, modality, reading style, healing process, or coaching approach that works, and you want the language to finally match it.
+
+You are a fit if you are ready for someone else to listen deeply, pull out the gold, and help you say the thing cleanly.
+
+Debbie said it best:
+
+"If you are in doubt, need more help, stuck with something, book a session."
+
+Bonus spots left: {{bonusLeft}} of 5
+
+Book here:
+{{bookingLink}}`
+    },
+    {
+      id: "email-debbie-bridge", channel: "Email", day: "Day 8", type: "Proof + Bridge", title: "Email 3: Debbie Story + Bridge",
+      body: `Subject: She came in wanting clarity
+
+Debbie came into her Forge Session wanting more clarity on her community and her offer.
+
+That is a familiar place.
+
+You can know your work matters and still feel uncertain about the words.
+
+You can have a real gift and still keep circling the same question:
+
+How do I explain this so the right people understand why it matters?
+
+Inside the session, we listened for the real transformation.
+
+The deeper transformation.
+
+The actual shift her work creates.
+
+Afterward, she said she came away with so much insight, so many ideas, and more clarity on her community and offer.
+
+That is what I want for you too.
+
+The Forge Session is 40 minutes of focused message clarity.
+
+You leave with language you can use in your content, offer, and next invitation.
+
+The launch bonus is still available for the first 5 bookings:
+10 done-for-you social posts built from your session messaging.
+
+Bonus spots left: {{bonusLeft}} of 5
+
+Book here:
+{{bookingLink}}
+
+Sunny`
+    },
+    {
+      id: "authority-post", channel: "Instagram/Facebook", day: "Day 8", type: "Authority", title: "$220K Messaging Shift Prompt",
+      body: `Use this as a true-story prompt. Add the real scene before publishing.
+
+Opening:
+"The $220K shift came from language people could recognize."
+
+Story beats to fill in:
+
+1. Where were you when you realized your message needed to change?
+2. What were you saying before?
+3. What did your audience start responding to once the message became more specific?
+4. Which offer, funnel, or community result became possible after that?
+5. What would you tell the spiritual business owner who is still hiding behind broad language?
+
+Bridge:
+That is why The Forge Session exists.
+
+CTA:
+If your work is powerful and the words are still blurry, book your Forge Session here:
+{{bookingLink}}`,
+      socialBody: `The shift was language people could recognize.
+
+Save this if your message has been circling the same three sentences.
+
+The $220K did not come from sounding clever.
+
+It came from getting specific enough that the right people could see themselves in the words.
+
+That is the part spiritual business owners often skip.
+
+You know your work.
+You know your clients change.
+You know there is something real happening in your sessions, readings, offers, or community.
+
+Then you sit down to write the post and it turns into broad language.
+
+The work is powerful.
+The message needs a sharper signal.
+
+That is what The Forge Session is for.
+
+In 40 minutes, we pull the transformation out of your work and turn it into language you can use in your content, offer, and next invitation.
+
+Book your Forge Session here:
+{{bookingLink}}
+
+Bonus tip: write down the exact sentence your client says when the work finally clicks. That sentence is often stronger than the polished version you were trying to force.
+
+DM me FORGE if you want me to send the details.
+
+Follow @SoulForgedFounders for soul-led business strategy, messaging strategy, offer clarity, and content marketing that sounds like a real person.
+
+#SpiritualEntrepreneur #SoulLedBusiness #MessagingStrategy #OfferClarity #ContentMarketing`
+    },
+    {
+      id: "faq-story", channel: "Instagram Story", day: "Day 9", type: "FAQ", title: "FAQ Story Frames",
+      body: `Frame 1:
+Forge Session FAQ
+
+Frame 2:
+How long is it?
+40 minutes on Zoom.
+
+Frame 3:
+Do I need to prep?
+Bring what you have. A messy bio, offer idea, caption, or voice note is enough.
+
+Frame 4:
+What do I leave with?
+Clearer language for who you help, what shifts, and how to say it.
+
+Frame 5:
+What is the bonus?
+First 5 bookings get 10 done-for-you social posts built from your session messaging.
+
+Frame 6:
+Bonus spots left: {{bonusLeft}} of 5
+Reply FORGE for the link.`
+    },
+    {
+      id: "bonus-countdown", channel: "Instagram/Facebook", day: "Day 10", type: "Countdown", title: "Bonus Countdown Post",
+      body: `{{bonusLeft}} of 5 Forge Session bonus spots are still available.
+
+The session itself is 40 minutes of message clarity.
+
+We clarify:
+
+Who you help
+What your work changes for them
+How to say it in language that makes the right people recognize themselves
+What to create or say next
+
+The bonus gives you 10 done-for-you social posts based on the message we create together.
+
+Each one includes:
+
+Graphic hook
+Caption
+ChatGPT image prompt
+
+That means you leave with the language and a starter content bank built from that language.
+
+Public price: $97
+SFF member price: $47
+
+Book here:
+{{bookingLink}}`,
+      socialBody: `Your bonus should make the next step easier to use.
+
+Save this if you are building an offer and wondering what kind of bonus actually helps.
+
+The Forge Session is 40 minutes of message clarity.
+
+We clarify who you help, what your work changes, and how to say it in words your ideal client can recognize.
+
+The launch bonus gives you 10 done-for-you social posts based on the message we create together.
+
+That means you leave with the language and a starter content bank built from that language.
+
+Graphic hook.
+Caption.
+ChatGPT image prompt.
+
+Bonus spots left: {{bonusLeft}} of 5.
+
+Book The Forge Session here:
+{{bookingLink}}
+
+Bonus tip: the best bonus reduces friction after the purchase. It should help the person use the thing they just bought.
+
+DM me FORGE if you want the details.
+
+Follow @SoulForgedFounders for spiritual business strategy, offer clarity, messaging strategy, and content marketing for soul-led founders.
+
+#SpiritualEntrepreneur #SoulLedBusiness #OfferClarity #MessagingStrategy #ContentMarketing`
+    },
+    {
+      id: "youtube-transform", channel: "YouTube", day: "Day 7 or 11", type: "Video Outline", title: "YouTube Outline: Transformation Language",
+      body: `Working title:
+The Messaging Shift That Makes Your Work Easier To Sell
+
+Opening:
+Most spiritual business owners are trying to explain the modality. Your future client is listening for the transformation.
+
+Section 1:
+Show the difference between modality language and transformation language.
+
+Section 2:
+Use 2 to 3 examples:
+Energy work to overwhelmed empath language
+Tarot reading to grounded intuition practice language
+Offer clarity to client-recognition language
+
+Section 3:
+Tell a short real story from your own business or Debbie's session.
+
+Section 4:
+Give viewers a quick exercise:
+Write one sentence that names the person, the stuck point, and the shift.
+
+CTA:
+This is exactly what we do in The Forge Session. Book here:
+{{bookingLink}}`
+    },
+    {
+      id: "youtube-social-reframe", channel: "Instagram/Facebook", day: "Day 11", type: "Repurpose", title: "Instagram/Facebook Reframe From YouTube",
+      body: `I published a deeper teaching on transformation language today.
+
+The core idea:
+
+Your ideal client is rarely looking for the modality first.
+
+She is looking for the sentence that helps her recognize herself.
+
+That is why vague language feels so frustrating.
+
+It can be true and still fail to land.
+
+Your next layer is specificity:
+
+Who is this for?
+What are they tired of carrying?
+What changes when your work works?
+What words would make them feel seen?
+
+Watch the video, then come back and write your current "I help" sentence in the comments if you want to play with it.
+
+And if you want my eyes on it directly, book The Forge Session here:
+{{bookingLink}}`
+    },
+    {
+      id: "light-reminder", channel: "Story + Reel", day: "Day 12", type: "Light Reminder", title: "Low-Effort Reminder",
+      body: `Option 1:
+Reshare Debbie's testimonial with:
+"This is what 40 minutes of message clarity can unlock. Bonus spots left: {{bonusLeft}} of 5."
+
+Option 2:
+Behind-the-scenes story:
+"Working on Forge Session notes today. The moment the language clicks is always the best part."
+
+Option 3:
+Simple direct reminder:
+"The Forge Session is open through July 15. 40 minutes. Clearer words. Stronger message. Book here: {{bookingLink}}"`
+    },
+    {
+      id: "urgency-email", channel: "Email", day: "Day 13", type: "Urgency", title: "Email 4: The Cost Of Vague Messaging",
+      body: `Subject: The real cost of vague messaging
+
+Vague messaging costs more than attention.
+
+It costs recognition.
+
+The right people may be seeing your work and still scrolling because the words are missing the signal that it is for them.
+
+Your work can be strong while the language still needs refinement.
+
+It means the transformation needs language.
+
+When your message gets specific, your content gets easier to write.
+
+Your offer gets easier to explain.
+
+Your ideal client gets an actual doorway into your work.
+
+That is what we create inside The Forge Session.
+
+In 40 minutes, we clarify who you help, what your work changes, and how to say it in a way that feels grounded and usable.
+
+The first 5 bookings get 10 done-for-you social posts built from the session message.
+
+Bonus spots left: {{bonusLeft}} of 5
+
+Book here:
+{{bookingLink}}
+
+Sunny`
+    },
+    {
+      id: "debbie-reframe", channel: "Skool", day: "Day 13", type: "Proof", title: "Debbie Reframe Post",
+      body: `Debbie said this after her Forge Session:
+
+"I came away with so much insight and ideas."
+
+That is the part I keep coming back to.
+
+Clarity does more than make you feel better.
+
+It gives you movement.
+
+It gives you the next post.
+The next offer angle.
+The next way to explain what has been living in your body for months.
+
+When the language lands, implementation gets lighter.
+
+That is what 40 minutes can do.
+
+Bonus spots left: {{bonusLeft}} of 5
+
+Book here:
+{{bookingLink}}`
+    },
+    {
+      id: "last-call", channel: "Email + Instagram/Facebook", day: "Day 14", type: "Last Call", title: "Final Bonus Close",
+      body: `Last call for The Forge Session launch bonus.
+
+The session stays available at $97 public and $47 for SFF members.
+
+The bonus closes today.
+
+If you book while a bonus spot is still available, you get 10 done-for-you social media posts built from the message we create in your session.
+
+This is for the spiritual business owner who is ready to stop circling the words and start saying the thing clearly.
+
+40 minutes.
+
+Your method.
+Your people.
+Your transformation.
+Your language.
+
+Bonus spots left: {{bonusLeft}} of 5
+
+Book here:
+{{bookingLink}}
+
+If all bonus spots are claimed, use this pivot:
+
+The bonus spots have been claimed, and The Forge Session is still open. If your message is asking for clarity, you can still book the session and leave with language you can use right away.`,
+      socialBody: `Today is the last day for The Forge Session launch bonus.
+
+Save this if your message has been the thing slowing down your content.
+
+The session stays available after today.
+
+The bonus closes today.
+
+If you book while a bonus spot is still available, you get 10 done-for-you social media posts built from the message we create in your session.
+
+This is for the spiritual business owner who is ready to stop circling the words and start saying the thing clearly.
+
+40 minutes.
+
+Your method.
+Your people.
+Your transformation.
+Your language.
+
+Bonus spots left: {{bonusLeft}} of 5.
+
+Book The Forge Session here:
+{{bookingLink}}
+
+Bonus tip: the sentence you are avoiding is usually the one your ideal client needs most.
+
+DM me FORGE if you want the link sent over.
+
+Follow @SoulForgedFounders for soul-led business strategy, offer clarity, messaging strategy, and content marketing that names the real shift.
+
+#SpiritualEntrepreneur #SoulLedBusiness #MessagingStrategy #OfferClarity #ContentMarketing`
+    },
+    {
+      id: "testimonial-request", channel: "Delivery", day: "Before first booking", type: "Template", title: "Post-Session Testimonial Request",
+      body: `Can you tell me in 2 to 3 sentences what shifted for you today?
+
+Helpful prompts:
+
+What felt clearer after the session?
+What language, idea, or next step are you leaving with?
+What would you say to someone who is wondering whether to book one?`
+    },
+    {
+      id: "delivery-sop", channel: "Delivery", day: "Before first booking", type: "SOP", title: "Bonus Delivery SOP",
+      body: `After each Forge Session:
+
+1. Save the client's clarified message and core transformation language.
+2. Ask for a short testimonial while the session is still fresh.
+3. Build 10 social posts from the session language.
+4. Include graphic hook, caption, and ChatGPT image prompt for each post.
+5. Deliver within 48 business hours.
+6. Invite the client into the next best SFF step if it is aligned.
+
+Delivery note:
+Keep the posts specific to the language that came from the session. The bonus should feel like an extension of the work and a tailored content pack.`
+    }
+  ];
+
+  const imagePrompts = {
+    "skool-launch": `Generate a 4:5 image using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+Overlay the headline "Your message needs a forge." across the upper two-thirds in bold serif type.
+Include @SoulForgedFounders at the bottom of the graphic.`,
+
+    "ig-launch": `Generate a 4:5 image using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+Overlay the headline "Your message is the doorway." across the upper two-thirds in bold serif type.
+Include @SoulForgedFounders at the bottom of the graphic.`,
+
+    "debbie-testimonial": `Generate a 4:5 image using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+Overlay the headline "40 minutes. Clearer words." centered in bold serif type.
+Include the small supporting text "Client clarity from The Forge Session" under the headline.
+Include @SoulForgedFounders at the bottom of the graphic.`,
+
+    "ig-story-light": `Generate a 4:5, 4-slide Instagram carousel using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+
+SLIDE 1 (Cover): Headline: "The Forge Session is open" Subline: "40 minutes for clearer words. Swipe."
+SLIDE 2: Headline: "Who you help" Subtext: "Name the person your work is here for."
+SLIDE 3: Headline: "What changes" Subtext: "Put the real shift into words."
+SLIDE 4 (CTA): Headline: "Bonus spots left: {{bonusLeft}} of 5" Subtext: "DM FORGE for the link."
+
+Include @SoulForgedFounders at the bottom of every slide.
+Add a right-arrow icon in the bottom corner of every slide except the CTA slide to signal swipe.`,
+
+    "teaching-transform": `Generate a 4:5 image using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+Overlay the headline "Say the shift before the modality." across the upper two-thirds in bold serif type.
+Include @SoulForgedFounders at the bottom of the graphic.`,
+
+    "reel-messaging-shift": `Generate a 4:5 image using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+Overlay the headline "The words clicked." centered in bold serif type.
+Include the small supporting text "Then the business got easier to explain." under the headline.
+Include @SoulForgedFounders at the bottom of the graphic.`,
+
+    "ig-fit-post": `Generate a 4:5 image using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+Overlay the headline "Your words need your fingerprints." across the upper two-thirds in bold serif type.
+Include @SoulForgedFounders at the bottom of the graphic.`,
+
+    "fit-post": `Generate a 4:5 image using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+Overlay the headline "Still circling the words?" across the upper two-thirds in bold serif type.
+Include the small supporting text "This is what The Forge Session is for." under the headline.
+Include @SoulForgedFounders at the bottom of the graphic.`,
+
+    "authority-post": `Generate a 4:5 image using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+Overlay the headline "The $220K shift was recognition." across the upper two-thirds in bold serif type.
+Include @SoulForgedFounders at the bottom of the graphic.`,
+
+    "faq-story": `Generate a 4:5, 6-slide Instagram carousel using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+
+SLIDE 1 (Cover): Headline: "Forge Session FAQ" Subline: "What to know before you book. Swipe."
+SLIDE 2: Headline: "How long is it?" Subtext: "40 minutes on Zoom."
+SLIDE 3: Headline: "What should I bring?" Subtext: "A messy bio, offer idea, caption, or voice note is enough."
+SLIDE 4: Headline: "What do I leave with?" Subtext: "Clearer language for who you help, what shifts, and how to say it."
+SLIDE 5: Headline: "What is the bonus?" Subtext: "10 done-for-you social posts built from your session messaging."
+SLIDE 6 (CTA): Headline: "Bonus spots left: {{bonusLeft}} of 5" Subtext: "DM FORGE for the link."
+
+Include @SoulForgedFounders at the bottom of every slide.
+Add a right-arrow icon in the bottom corner of every slide except the CTA slide to signal swipe.`,
+
+    "bonus-countdown": `Generate a 4:5 image using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+Overlay the headline "{{bonusLeft}} of 5 bonus spots left" centered in bold serif type.
+Include the small supporting text "Book The Forge Session before the bonus closes." under the headline.
+Include @SoulForgedFounders at the bottom of the graphic.`,
+
+    "youtube-transform": `Generate a 4:5 image using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+Overlay the headline "The messaging shift that makes your work easier to sell" across the upper two-thirds in bold serif type.
+Include @SoulForgedFounders at the bottom of the graphic.`,
+
+    "youtube-social-reframe": `Generate a 4:5 image using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+Overlay the headline "Your client is listening for the shift." across the upper two-thirds in bold serif type.
+Include @SoulForgedFounders at the bottom of the graphic.`,
+
+    "light-reminder": `Generate a 4:5 image using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+Overlay the headline "Clearer words before July 15." centered in bold serif type.
+Include the small supporting text "The Forge Session is open." under the headline.
+Include @SoulForgedFounders at the bottom of the graphic.`,
+
+    "debbie-reframe": `Generate a 4:5 image using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+Overlay the headline "Clarity gives you movement." across the upper two-thirds in bold serif type.
+Include the small supporting text "A Forge Session reflection." under the headline.
+Include @SoulForgedFounders at the bottom of the graphic.`,
+
+    "last-call": `Generate a 4:5 image using the uploaded Soul-Forged Founders brand style (dark forge green, copper, ember, gold, warm parchment texture, elegant serif headline, grounded mystical business energy, no neon, no generic stock-photo look).
+Overlay the headline "Last call for the bonus" centered in bold serif type.
+Include the small supporting text "The Forge Session bonus closes today." under the headline.
+Include @SoulForgedFounders at the bottom of the graphic.`
+  };
+
+  const references = [
+    {
+      id: "promise", title: "Core Promise",
+      html: `<div class="quote-block">Email subject: The one thing that changes everything: specificity.</div>
+      <div class="quote-block">Post hook: Your ideal client needs to hear the transformation. Here is how to say it.</div>
+      <div class="quote-block">Sales angle: Say what changes. One session. Total clarity on the message that makes the right people say yes.</div>`
+    },
+    {
+      id: "offer", title: "Offer Stack",
+      html: `<p>One private Forge Session on Zoom, 40 minutes.</p>
+      <p>Your two-sentence answer to what do you do.</p>
+      <p>Real-time copy edits in your voice.</p>
+      <p>A clear action plan so you know what comes next.</p>
+      <p>Recording of your session.</p>
+      <div class="notice"><b>Launch bonus:</b> first 5 bookings get 10 done-for-you social media posts built on the messaging from the session. Delivered within 48 business hours.</div>`
+    },
+    {
+      id: "debbie", title: "Debbie Testimonial Lines",
+      html: `<div class="quote-block">"I came away with so much insight and ideas."</div>
+      <div class="quote-block">"Sunny has SO much experience that she brings, I highly recommend booking this."</div>
+      <div class="quote-block">"If you are in doubt, need more help, stuck with something, book a session."</div>
+      <div class="quote-block">"...more clarity on my community and my offer"</div>
+      <div class="quote-block">"...so many great ideas and suggestions"</div>`
+    },
+    {
+      id: "objections", title: "Objections and Answers",
+      html: `<p><b>Will this work for me?</b><br>If your work changes lives and your posts are missing traction, that is often a messaging fix. Messaging fixes can happen in one focused session.</p>
+      <p><b>It sounds complicated.</b><br>It is one call. You bring what you have, and we shape the language together.</p>
+      <p><b>Can Sunny help me?</b><br>Sunny has generated over $220K through her own funnels and built paid communities through specific, transformation-first messaging.</p>
+      <p><b>I should figure this out myself.</b><br>One session can collapse months of circling into 40 minutes of clarity.</p>`
+    }
+  ];
+
+  const defaultState = {
+    checked: {},
+    assetStatus: {},
+    filter: "All",
+    metrics: {
+      bonusClaimed: 0,
+      bookings: 0,
+      revenue: 0,
+      emailSegment: "",
+      bookingLink: "",
+      skoolLink: "",
+      instagramLink: ""
+    },
+    dm: {}
+  };
+
+  let state = loadState();
+
+  function clonePlain(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function loadState() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      return mergeState(defaultState, parsed || {});
+    } catch (error) {
+      return clonePlain(defaultState);
+    }
+  }
+
+  function mergeState(base, saved) {
+    const merged = clonePlain(base);
+    merged.checked = { ...merged.checked, ...(saved.checked || {}) };
+    merged.assetStatus = { ...merged.assetStatus, ...(saved.assetStatus || {}) };
+    merged.metrics = { ...merged.metrics, ...(saved.metrics || {}) };
+    merged.filter = saved.filter || merged.filter;
+    merged.dm = { ...(saved.dm || {}) };
+    return merged;
+  }
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function parseLocalDate(iso) {
+    const parts = iso.split("-").map(Number);
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+  }
+
+  function todayKey() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
+
+  function getBonusLeft() {
+    const claimed = clamp(Number(state.metrics.bonusClaimed) || 0, 0, 5);
+    return Math.max(0, 5 - claimed);
+  }
+
+  function replaceTokens(text) {
+    const bookingLink = state.metrics.bookingLink && state.metrics.bookingLink.trim() ? state.metrics.bookingLink.trim() : "[add booking link]";
+    return text
+      .replaceAll("{{bonusLeft}}", String(getBonusLeft()))
+      .replaceAll("{{bookingLink}}", bookingLink);
+  }
+
+  function getImagePrompt(assetId) {
+    return imagePrompts[assetId] ? replaceTokens(imagePrompts[assetId]) : "";
+  }
+
+  function getGraphicHook(assetId) {
+    const prompt = getImagePrompt(assetId);
+    if (!prompt) return "";
+    const overlay = prompt.match(/Overlay the headline "([^"]+)"/);
+    if (overlay) return overlay[1];
+    const cover = prompt.match(/SLIDE 1 \(Cover\): Headline: "([^"]+)"/);
+    return cover ? cover[1] : "";
+  }
+
+  function getPlatformNote(asset) {
+    if (asset.socialBody && asset.channel.includes("Email")) return "Mixed-platform asset: use the email draft for the list and the Instagram/Facebook caption for feed posts. Same idea, different room.";
+    if (asset.socialBody && asset.channel.includes("Skool")) return "Mixed-platform asset: use the community draft for Skool, and the Instagram/Facebook caption for feed posts. Same idea, different room.";
+    if (asset.channel.includes("Skool")) return "Skool/community post: direct, warmer, and more conversational. Hashtags and caption-formula structure are not needed here.";
+    if (asset.channel.includes("Instagram") || asset.channel.includes("Reel") || asset.channel.includes("Story")) return "Instagram/Facebook-style asset: use the caption formula when this goes to the feed. Story frames stay short and tappable.";
+    if (asset.channel.includes("Email")) return "Email asset: subject line first, one clear invitation, no hashtag stack.";
+    return "Operational asset: use this to prep delivery or backend workflow.";
+  }
+
+  function socialIsPrimary(asset) {
+    return Boolean(asset.socialBody && !asset.channel.includes("Skool") && !asset.channel.includes("Email"));
+  }
+
+  function primaryAssetBody(asset) {
+    return socialIsPrimary(asset) ? asset.socialBody : asset.body;
+  }
+
+  function secondarySocialBody(asset) {
+    return asset.socialBody && !socialIsPrimary(asset) ? asset.socialBody : "";
+  }
+
+  function primaryBodyLabel(asset) {
+    if (socialIsPrimary(asset)) return "Instagram / Facebook Caption";
+    if (asset.channel.includes("Skool")) return "Skool / Community Draft";
+    if (asset.channel.includes("Email")) return "Email Draft";
+    if (asset.channel.includes("Story")) return "Story Frames";
+    if (asset.channel.includes("YouTube")) return "Video Outline";
+    return "Caption / Draft";
+  }
+
+  function allTasks() {
+    return days.flatMap(day => day.tasks.map(task => ({ ...task, day })));
+  }
+
+  function getDMRows(setId) {
+    const set = dmSets.find(item => item.id === setId);
+    if (!set) return [];
+    if (!state.dm[setId]) state.dm[setId] = {};
+    return Array.from({ length: set.target }, (_, index) => {
+      const key = String(index);
+      return {
+        name: "",
+        sent: false,
+        replied: false,
+        booked: false,
+        note: "",
+        ...(state.dm[setId][key] || {})
+      };
+    });
+  }
+
+  function dmCount(setId, field) {
+    return getDMRows(setId).filter(row => Boolean(row[field])).length;
+  }
+
+  function isTaskDone(task) {
+    if (task.dmSet) {
+      const set = dmSets.find(item => item.id === task.dmSet);
+      return Boolean(state.checked[task.id]) || (set && dmCount(task.dmSet, "sent") >= set.target);
+    }
+    return Boolean(state.checked[task.id]);
+  }
+
+  function progressFor(types) {
+    const items = allTasks().filter(item => types.includes(item.type));
+    const done = items.filter(isTaskDone).length;
+    return { done, total: items.length, pct: items.length ? Math.round((done / items.length) * 100) : 0 };
+  }
+
+  function contentProgress() {
+    const readyStates = ["Ready", "Published"];
+    const done = assets.filter(asset => readyStates.includes(state.assetStatus[asset.id] || "Draft")).length;
+    return { done, total: assets.length, pct: assets.length ? Math.round((done / assets.length) * 100) : 0 };
+  }
+
+  function launchDayStatus() {
+    const today = todayKey();
+    const launchStart = parseLocalDate("2026-07-02");
+    const launchEnd = parseLocalDate("2026-07-15");
+    const now = parseLocalDate(today);
+    if (now < launchStart) return "Pre-launch";
+    if (now > launchEnd) return "Closed";
+    const dayNumber = Math.floor((now - launchStart) / DAY_MS) + 1;
+    return `Day ${dayNumber}`;
+  }
+
+  function countdownDays() {
+    const today = parseLocalDate(todayKey());
+    const close = parseLocalDate("2026-07-15");
+    return Math.max(0, Math.ceil((close - today) / DAY_MS));
+  }
+
+  function renderTopStats() {
+    const priority = progressFor(["priority", "required"]);
+    const bonus = progressFor(["bonus", "prep"]);
+    const content = contentProgress();
+    const warmSent = dmCount("warm-dms", "sent");
+    const followSent = dmCount("followup-dms", "sent");
+    const replies = dmSets.reduce((sum, set) => sum + dmCount(set.id, "replied"), 0);
+    const bookings = Number(state.metrics.bookings) || dmSets.reduce((sum, set) => sum + dmCount(set.id, "booked"), 0);
+    const stats = [
+      ["Launch", launchDayStatus(), `${countdownDays()} days to close`],
+      ["Priority", `${priority.done}/${priority.total}`, `${priority.pct}% complete`],
+      ["Bonus", `${bonus.done}/${bonus.total}`, `${bonus.pct}% optional`],
+      ["DMs Sent", `${warmSent + followSent}/25`, `${replies} replies tracked`],
+      ["Posts", `${content.done}/${content.total}`, "ready or published"],
+      ["Bookings", String(bookings), `${getBonusLeft()} bonus spots left`]
+    ];
+    document.getElementById("top-stats").innerHTML = stats.map(([label, value, note]) => `
+      <div class="stat">
+        <span class="stat-label">${escapeHtml(label)}</span>
+        <span class="stat-value">${escapeHtml(value)}</span>
+        <span class="stat-note">${escapeHtml(note)}</span>
+      </div>
+    `).join("");
+  }
+
+  function currentDay() {
+    const exact = days.find(day => day.iso === todayKey());
+    if (exact) return exact;
+    return days.find(day => day.tasks.some(task => !isTaskDone(task))) || days[0];
+  }
+
+  function renderToday() {
+    const day = currentDay();
+    const todaysAssets = [...new Set(day.tasks.map(task => task.asset).filter(Boolean))]
+      .map(id => assets.find(asset => asset.id === id))
+      .filter(Boolean);
+    document.getElementById("today-primary").innerHTML = `
+      <div class="section-heading">Today</div>
+      ${renderDayCard(day, "today")}
+    `;
+    document.getElementById("today-side").innerHTML = `
+      <div class="card forest">
+        <h2>Next Best Action</h2>
+        <p class="muted">${escapeHtml(nextActionText(day))}</p>
+        <div class="progress-wrap">${renderProgressLines()}</div>
+      </div>
+      <div class="card">
+        <h2>Today's Copy Kit</h2>
+        ${todaysAssets.length ? todaysAssets.map(asset => renderTinyAsset(asset)).join("") : `<p class="muted">No asset attached to this day yet.</p>`}
+      </div>
+    `;
+  }
+
+  function nextActionText(day) {
+    const next = day.tasks.find(task => !isTaskDone(task));
+    if (!next) return "Today is complete. Check the Post Bank for any draft that still needs your voice before publishing.";
+    if (next.dmSet) return `Open the DM Tracker and complete ${next.title.toLowerCase()}.`;
+    if (next.asset) return `Open the Post Bank and prepare: ${next.title}.`;
+    return next.title;
+  }
+
+  function renderProgressLines() {
+    const priority = progressFor(["priority", "required"]);
+    const bonus = progressFor(["bonus", "prep"]);
+    const content = contentProgress();
+    return [
+      ["Priority work", priority],
+      ["Bonus and prep", bonus],
+      ["Post bank", content]
+    ].map(([label, data]) => `
+      <div class="progress-line">
+        <div class="progress-head"><span>${escapeHtml(label)}</span><span>${data.done}/${data.total}</span></div>
+        <div class="bar"><span class="fill" style="width:${data.pct}%"></span></div>
+      </div>
+    `).join("");
+  }
+
+  function renderRunway() {
+    document.getElementById("runway-list").innerHTML = days.map(day => {
+      const phaseHeading = shouldShowPhaseHeading(day) ? `<div class="section-heading">${escapeHtml(day.phase)}</div>` : "";
+      return `${phaseHeading}${renderDayCard(day, "runway")}`;
+    }).join("");
+  }
+
+  function shouldShowPhaseHeading(day) {
+    const index = days.indexOf(day);
+    return index === 0 || days[index - 1].phase !== day.phase;
+  }
+
+  function renderDayCard(day, scope) {
+    const complete = day.tasks.filter(isTaskDone).length;
+    return `
+      <article class="card day-card ${day.phase.includes("Delivery") ? "mauve" : ""}">
+        <div class="day-head">
+          <div>
+            <div class="day-title">
+              <strong>${typeof day.day === "number" ? `Day ${day.day}` : escapeHtml(String(day.day))}</strong>
+              ${day.badge ? `<span class="tag priority">${escapeHtml(day.badge)}</span>` : ""}
+            </div>
+            <div class="muted small">${escapeHtml(day.phase)}</div>
+          </div>
+          <div class="day-date">${escapeHtml(day.date)}</div>
+        </div>
+        <div class="progress-line">
+          <div class="progress-head"><span>Day Progress</span><span>${complete}/${day.tasks.length}</span></div>
+          <div class="bar"><span class="fill" style="width:${day.tasks.length ? Math.round((complete / day.tasks.length) * 100) : 0}%"></span></div>
+        </div>
+        ${day.tasks.map(task => renderTask(task, scope)).join("")}
+      </article>
+    `;
+  }
+
+  function renderTask(task, scope) {
+    const done = isTaskDone(task);
+    const asset = task.asset ? assets.find(item => item.id === task.asset) : null;
+    const dmSet = task.dmSet ? dmSets.find(item => item.id === task.dmSet) : null;
+    const dmProgress = dmSet ? `${dmCount(dmSet.id, "sent")}/${dmSet.target} sent` : "";
+    return `
+      <div class="task ${done ? "done" : ""}">
+        <input type="checkbox" aria-label="Mark ${escapeAttr(task.title)} complete" data-task-id="${escapeAttr(task.id)}" ${done ? "checked" : ""}>
+        <div class="task-copy">
+          <div class="task-title">
+            <span class="tag ${escapeAttr(task.type)}">${escapeHtml(task.type)}</span>
+            <strong>${escapeHtml(task.title)}</strong>
+          </div>
+          <p>${escapeHtml(task.detail)}</p>
+          ${dmSet ? `<p class="small mono">${escapeHtml(dmProgress)}</p>` : ""}
+        </div>
+        <div class="task-actions">
+          ${asset ? `<button class="copy-btn" data-copy-asset="${escapeAttr(asset.id)}">Copy Draft</button>` : ""}
+          ${asset && getImagePrompt(asset.id) ? `<button class="copy-btn" data-copy-image-prompt="${escapeAttr(asset.id)}">Copy Image Prompt</button>` : ""}
+          ${dmSet ? `<button class="copy-btn" data-copy-dm="${escapeAttr(dmSet.id)}">Copy DM</button>` : ""}
+        </div>
+        ${dmSet ? renderSlots(dmSet.id, scope) : ""}
+      </div>
+    `;
+  }
+
+  function renderSlots(setId, scope) {
+    const rows = getDMRows(setId);
+    return `
+      <div class="slot-grid" aria-label="${escapeAttr(setId)} slots">
+        ${rows.map((row, index) => `
+          <label class="slot ${row.sent ? "sent" : ""}">
+            <input type="checkbox" data-dm-slot="${escapeAttr(setId)}" data-dm-index="${index}" data-dm-field="sent" data-scope="${escapeAttr(scope)}" ${row.sent ? "checked" : ""}>
+            <span>${index + 1}</span>
+          </label>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function renderTinyAsset(asset) {
+    const status = state.assetStatus[asset.id] || "Draft";
+    const imagePrompt = getImagePrompt(asset.id);
+    const hook = getGraphicHook(asset.id);
+    return `
+      <div class="notice" style="margin-top:10px">
+        <b>${escapeHtml(asset.title)}</b><br>
+        <span>${escapeHtml(asset.channel)} | ${escapeHtml(status)}</span><br>
+        ${hook ? `<span class="small">Graphic hook: ${escapeHtml(hook)}</span><br>` : ""}
+        <button class="copy-btn" style="margin-top:8px" data-copy-asset="${escapeAttr(asset.id)}">Copy Draft</button>
+        ${asset.socialBody ? `<button class="copy-btn" style="margin-top:8px" data-copy-social="${escapeAttr(asset.id)}">Copy IG/FB Caption</button>` : ""}
+        ${imagePrompt ? `<button class="copy-btn" style="margin-top:8px" data-copy-image-prompt="${escapeAttr(asset.id)}">Copy Image Prompt</button>` : ""}
+      </div>
+    `;
+  }
+
+  function renderAssetFilters() {
+    const channels = ["All", ...new Set(assets.map(asset => asset.channel.split(" + ")[0]))];
+    document.getElementById("asset-filters").innerHTML = channels.map(channel => `
+      <button class="tab-btn" type="button" data-asset-filter="${escapeAttr(channel)}" aria-selected="${state.filter === channel ? "true" : "false"}">${escapeHtml(channel)}</button>
+    `).join("");
+  }
+
+  function renderAssets() {
+    renderAssetFilters();
+    const filtered = state.filter === "All" ? assets : assets.filter(asset => asset.channel.startsWith(state.filter));
+    document.getElementById("asset-grid").innerHTML = filtered.map(asset => {
+      const status = state.assetStatus[asset.id] || "Draft";
+      const imagePrompt = getImagePrompt(asset.id);
+      const hook = getGraphicHook(asset.id);
+      return `
+        <article class="card asset-card">
+          <h3>${escapeHtml(asset.title)}</h3>
+          <div class="asset-meta">
+            <span class="tag priority">${escapeHtml(asset.channel)}</span>
+            <span class="tag bonus">${escapeHtml(asset.day)}</span>
+            <span class="pill">${escapeHtml(asset.type)}</span>
+          </div>
+          <div class="platform-note">${escapeHtml(getPlatformNote(asset))}</div>
+          ${hook ? `
+            <div class="asset-subhead">Graphic Hook</div>
+            <div class="graphic-hook">${escapeHtml(hook)}</div>
+          ` : ""}
+          <div class="asset-subhead">${escapeHtml(primaryBodyLabel(asset))}</div>
+          <div class="asset-body" id="asset-body-${escapeAttr(asset.id)}">${escapeHtml(replaceTokens(primaryAssetBody(asset)))}</div>
+          ${secondarySocialBody(asset) ? `
+            <div class="asset-subhead">Instagram / Facebook Caption</div>
+            <div class="asset-body" id="social-body-${escapeAttr(asset.id)}">${escapeHtml(replaceTokens(secondarySocialBody(asset)))}</div>
+          ` : ""}
+          ${imagePrompt ? `
+            <div class="asset-subhead">ChatGPT Image Prompt</div>
+            <div class="image-prompt" id="image-prompt-${escapeAttr(asset.id)}">${escapeHtml(imagePrompt)}</div>
+          ` : ""}
+          <div class="asset-actions">
+            <select class="status-select" aria-label="Status for ${escapeAttr(asset.title)}" data-asset-status="${escapeAttr(asset.id)}">
+              ${["Draft", "Needs Voice", "Ready", "Published"].map(option => `<option value="${option}" ${status === option ? "selected" : ""}>${option}</option>`).join("")}
+            </select>
+            <button class="copy-btn" data-copy-asset="${escapeAttr(asset.id)}">Copy Draft</button>
+            ${secondarySocialBody(asset) ? `<button class="copy-btn" data-copy-social="${escapeAttr(asset.id)}">Copy IG/FB Caption</button>` : ""}
+            ${imagePrompt ? `<button class="copy-btn" data-copy-image-prompt="${escapeAttr(asset.id)}">Copy Image Prompt</button>` : ""}
+            ${imagePrompt ? `<button class="copy-btn" data-copy-package="${escapeAttr(asset.id)}">Copy Package</button>` : ""}
+          </div>
+        </article>
+      `;
+    }).join("");
+  }
+
+  function renderDMs() {
+    document.getElementById("warm-dm-script").textContent = dmScripts.warm;
+    document.getElementById("follow-dm-script").textContent = dmScripts.follow;
+    document.getElementById("dm-sets").innerHTML = dmSets.map(set => {
+      const rows = getDMRows(set.id);
+      const sent = dmCount(set.id, "sent");
+      const replied = dmCount(set.id, "replied");
+      const booked = dmCount(set.id, "booked");
+      return `
+        <section class="card dm-set">
+          <div class="day-head">
+            <div>
+              <h2>${escapeHtml(set.title)}</h2>
+              <p class="muted">${escapeHtml(set.due)} | ${sent}/${set.target} sent | ${replied} replies | ${booked} booked</p>
+            </div>
+            <button class="copy-btn" data-copy-dm="${escapeAttr(set.id)}">Copy Script</button>
+          </div>
+          <div class="dm-row head">
+            <div>#</div><div>Name</div><div>Sent</div><div>Reply</div><div>Booked</div><div>Note</div>
+          </div>
+          ${rows.map((row, index) => `
+            <div class="dm-row">
+              <div class="dm-index">${index + 1}</div>
+              <input type="text" value="${escapeAttr(row.name)}" placeholder="Name" data-dm-text="${escapeAttr(set.id)}" data-dm-index="${index}" data-dm-field="name">
+              ${["sent", "replied", "booked"].map(field => `
+                <label class="dm-check">
+                  <input type="checkbox" data-dm-slot="${escapeAttr(set.id)}" data-dm-index="${index}" data-dm-field="${field}" ${row[field] ? "checked" : ""}>
+                  <span>${field}</span>
+                </label>
+              `).join("")}
+              <input type="text" value="${escapeAttr(row.note)}" placeholder="Follow-up note" data-dm-text="${escapeAttr(set.id)}" data-dm-index="${index}" data-dm-field="note">
+            </div>
+          `).join("")}
+        </section>
+      `;
+    }).join("");
+  }
+
+  function renderMetrics() {
+    const metricFields = [
+      ["bonusClaimed", "Bonus Spots Claimed", "number", "0"],
+      ["bookings", "Bookings", "number", "0"],
+      ["revenue", "Revenue", "number", "0"],
+      ["emailSegment", "Email Segment Count", "text", "ex: 412"]
+    ];
+    document.getElementById("metric-fields").innerHTML = metricFields.map(([key, label, type, placeholder]) => `
+      <label class="field">
+        <span class="label">${escapeHtml(label)}</span>
+        <input type="${type}" min="0" ${key === "bonusClaimed" ? "max=\"5\"" : ""} value="${escapeAttr(state.metrics[key])}" placeholder="${escapeAttr(placeholder)}" data-metric="${escapeAttr(key)}">
+      </label>
+    `).join("");
+
+    const linkFields = [
+      ["bookingLink", "Booking Link", "https://..."],
+      ["skoolLink", "SFF Skool Link", "https://www.skool.com/..."],
+      ["instagramLink", "Instagram Link", "https://instagram.com/..."]
+    ];
+    document.getElementById("link-fields").innerHTML = linkFields.map(([key, label, placeholder]) => `
+      <label class="field">
+        <span class="label">${escapeHtml(label)}</span>
+        <input type="url" value="${escapeAttr(state.metrics[key])}" placeholder="${escapeAttr(placeholder)}" data-metric="${escapeAttr(key)}">
+      </label>
+    `).join("");
+
+    document.getElementById("metric-progress").innerHTML = renderProgressLines();
+
+    const footerSkool = document.getElementById("footer-skool-link");
+    const skoolLink = state.metrics.skoolLink && state.metrics.skoolLink.trim();
+    if (skoolLink) footerSkool.href = skoolLink;
+  }
+
+  function renderReferences() {
+    document.getElementById("reference-sections").innerHTML = references.map((ref, index) => `
+      <div class="collapsible">
+        <button class="collapsible-trigger" aria-expanded="${index === 0 ? "true" : "false"}" aria-controls="ref-${escapeAttr(ref.id)}" id="ref-trigger-${escapeAttr(ref.id)}">
+          <span>${escapeHtml(ref.title)}</span>
+          <span class="arrow">v</span>
+        </button>
+        <div class="collapsible-body ${index === 0 ? "open" : ""}" id="ref-${escapeAttr(ref.id)}" role="region" aria-labelledby="ref-trigger-${escapeAttr(ref.id)}">
+          ${ref.html}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function renderAll() {
+    renderTopStats();
+    renderToday();
+    renderRunway();
+    renderAssets();
+    renderDMs();
+    renderMetrics();
+    renderReferences();
+  }
+
+  function setTab(tabName) {
+    document.querySelectorAll(".tab-btn[data-tab]").forEach(button => {
+      const active = button.dataset.tab === tabName;
+      button.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    document.querySelectorAll(".panel").forEach(panel => panel.classList.remove("active"));
+    document.getElementById(`panel-${tabName}`).classList.add("active");
+  }
+
+  function copyAsset(assetId, button) {
+    const asset = assets.find(item => item.id === assetId);
+    if (!asset) return;
+    copyText(replaceTokens(primaryAssetBody(asset)), button, "Draft copied");
+  }
+
+  function copyImagePrompt(assetId, button) {
+    const prompt = getImagePrompt(assetId);
+    if (!prompt) return;
+    copyText(prompt, button, "Image prompt copied");
+  }
+
+  function copySocialCaption(assetId, button) {
+    const asset = assets.find(item => item.id === assetId);
+    if (!asset || !asset.socialBody) return;
+    copyText(replaceTokens(asset.socialBody), button, "IG/FB caption copied");
+  }
+
+  function copyPackage(assetId, button) {
+    const asset = assets.find(item => item.id === assetId);
+    if (!asset) return;
+    copyText(assetPackageText(asset), button, "Post package copied");
+  }
+
+  function assetPackageText(asset, includeStatus = false) {
+    const prompt = getImagePrompt(asset.id);
+    const secondary = secondarySocialBody(asset);
+    const hook = getGraphicHook(asset.id);
+    const status = state.assetStatus[asset.id] || "Draft";
+    const meta = [
+      `POST ID: ${asset.id}`,
+      `TITLE: ${asset.title}`,
+      `CHANNEL: ${asset.channel}`,
+      `DAY: ${asset.day}`,
+      `TYPE: ${asset.type}`,
+      includeStatus ? `STATUS: ${status}` : ""
+    ].filter(Boolean).join("\n");
+
+    return `${meta}\n\nPLATFORM NOTE:\n${getPlatformNote(asset)}${hook ? `\n\nGRAPHIC HOOK:\n${hook}` : ""}\n\n${primaryBodyLabel(asset).toUpperCase()}:\n${replaceTokens(primaryAssetBody(asset))}${secondary ? `\n\nINSTAGRAM / FACEBOOK CAPTION:\n${replaceTokens(secondary)}` : ""}${prompt ? `\n\nCHATGPT IMAGE PROMPT:\n${prompt}` : ""}`;
+  }
+
+  function formatPostBankExport(assetList, title = "The Forge Session Full Post Bank") {
+    const brief = [
+      title,
+      "Generated from The Forge Session command center.",
+      "",
+      "CLAUDE EDITING BRIEF",
+      "Revise these posts in Sunny's voice without making them sound over-polished or generic.",
+      "Keep every POST ID exactly as written so the edited copy can be mapped back into the command center.",
+      "Respect the platform split: Skool only on July 2, July 8, and July 14. All other social posts are Instagram/Facebook unless labeled otherwise.",
+      "For Instagram/Facebook captions, follow the caption prompt: use a hook that is different from the visual, add a lazy CTA early, use readable line breaks, include 3-5 natural SEO keywords, place the main CTA before the secondary CTA, add a bonus tip, tag @SoulForgedFounders, and end with relevant hashtags.",
+      "For Skool posts, keep the copy community-first, useful, and lighter on promotion.",
+      "For emails, preserve subject lines unless a stronger one is clearly better.",
+      "",
+      "POST BANK"
+    ].join("\n");
+
+    return `${brief}\n\n${assetList.map(asset => assetPackageText(asset, true)).join("\n\n==============================\n\n")}`;
+  }
+
+  function copyText(text, button, message) {
+    const finish = () => {
+      signalButton(button, "Copied", message || "Copied");
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(finish).catch(() => fallbackCopy(text, finish));
+    } else {
+      fallbackCopy(text, finish);
+    }
+  }
+
+  function fallbackCopy(text, done) {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.style.position = "fixed";
+    area.style.left = "-999px";
+    document.body.appendChild(area);
+    area.focus();
+    area.select();
+    try { document.execCommand("copy"); } catch (error) {}
+    area.remove();
+    done();
+  }
+
+  function signalButton(button, label, message) {
+    if (button) {
+      const old = button.textContent;
+      button.textContent = label;
+      button.classList.add("copied");
+      setTimeout(() => {
+        button.textContent = old;
+        button.classList.remove("copied");
+      }, 1600);
+    }
+    toast(message);
+  }
+
+  function copyVisibleAssets(button) {
+    const filtered = state.filter === "All" ? assets : assets.filter(asset => asset.channel.startsWith(state.filter));
+    copyText(formatPostBankExport(filtered, "The Forge Session Visible Post Bank"), button, "Visible post bank copied");
+  }
+
+  function copyFullPostBank(button) {
+    copyText(formatPostBankExport(assets), button, "Full post bank copied");
+  }
+
+  function downloadPostBank(button) {
+    const text = formatPostBankExport(assets);
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "forge-session-post-bank-claude-packet.txt";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 800);
+    signalButton(button, "Downloaded", "Text file downloaded");
+  }
+
+  function toast(message) {
+    const el = document.getElementById("toast");
+    el.textContent = message;
+    el.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+  }
+
+  function updateDMField(setId, index, field, value) {
+    if (!state.dm[setId]) state.dm[setId] = {};
+    if (!state.dm[setId][String(index)]) state.dm[setId][String(index)] = {};
+    state.dm[setId][String(index)][field] = value;
+    saveState();
+  }
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapeAttr(value) {
+    return escapeHtml(value);
+  }
+
+  document.addEventListener("click", event => {
+    const tab = event.target.closest("[data-tab]");
+    if (tab) {
+      setTab(tab.dataset.tab);
+      return;
+    }
+
+    const filter = event.target.closest("[data-asset-filter]");
+    if (filter) {
+      state.filter = filter.dataset.assetFilter;
+      saveState();
+      renderAssets();
+      return;
+    }
+
+    const assetCopy = event.target.closest("[data-copy-asset]");
+    if (assetCopy) {
+      copyAsset(assetCopy.dataset.copyAsset, assetCopy);
+      return;
+    }
+
+    const imagePromptCopy = event.target.closest("[data-copy-image-prompt]");
+    if (imagePromptCopy) {
+      copyImagePrompt(imagePromptCopy.dataset.copyImagePrompt, imagePromptCopy);
+      return;
+    }
+
+    const socialCopy = event.target.closest("[data-copy-social]");
+    if (socialCopy) {
+      copySocialCaption(socialCopy.dataset.copySocial, socialCopy);
+      return;
+    }
+
+    const packageCopy = event.target.closest("[data-copy-package]");
+    if (packageCopy) {
+      copyPackage(packageCopy.dataset.copyPackage, packageCopy);
+      return;
+    }
+
+    const dmCopy = event.target.closest("[data-copy-dm]");
+    if (dmCopy) {
+      const set = dmSets.find(item => item.id === dmCopy.dataset.copyDm);
+      if (set) copyText(set.script, dmCopy, "DM script copied");
+      return;
+    }
+
+    const allAssets = event.target.closest("[data-copy-all-assets]");
+    if (allAssets) {
+      copyVisibleAssets(allAssets);
+      return;
+    }
+
+    const fullBank = event.target.closest("[data-copy-full-bank]");
+    if (fullBank) {
+      copyFullPostBank(fullBank);
+      return;
+    }
+
+    const downloadBank = event.target.closest("[data-download-post-bank]");
+    if (downloadBank) {
+      downloadPostBank(downloadBank);
+      return;
+    }
+
+    const allDms = event.target.closest("[data-copy-dm-scripts]");
+    if (allDms) {
+      copyText(`Warm DM Sprint\n\n${dmScripts.warm}\n\nEngaged Lead Follow-Ups\n\n${dmScripts.follow}`, allDms, "DM scripts copied");
+      return;
+    }
+
+    const collapsible = event.target.closest(".collapsible-trigger");
+    if (collapsible) {
+      const open = collapsible.getAttribute("aria-expanded") === "true";
+      collapsible.setAttribute("aria-expanded", open ? "false" : "true");
+      document.getElementById(collapsible.getAttribute("aria-controls")).classList.toggle("open", !open);
+    }
+  });
+
+  document.addEventListener("change", event => {
+    const task = event.target.closest("[data-task-id]");
+    if (task) {
+      state.checked[task.dataset.taskId] = task.checked;
+      saveState();
+      renderAll();
+      return;
+    }
+
+    const dmSlot = event.target.closest("[data-dm-slot]");
+    if (dmSlot) {
+      updateDMField(dmSlot.dataset.dmSlot, dmSlot.dataset.dmIndex, dmSlot.dataset.dmField, dmSlot.checked);
+      renderAll();
+      return;
+    }
+
+    const status = event.target.closest("[data-asset-status]");
+    if (status) {
+      state.assetStatus[status.dataset.assetStatus] = status.value;
+      saveState();
+      renderAll();
+      return;
+    }
+
+    const metric = event.target.closest("[data-metric]");
+    if (metric) {
+      const key = metric.dataset.metric;
+      state.metrics[key] = metric.type === "number" ? clamp(Number(metric.value) || 0, 0, key === "bonusClaimed" ? 5 : 999999) : metric.value;
+      saveState();
+      renderAll();
+    }
+  });
+
+  document.addEventListener("input", event => {
+    const dmText = event.target.closest("[data-dm-text]");
+    if (dmText) {
+      updateDMField(dmText.dataset.dmText, dmText.dataset.dmIndex, dmText.dataset.dmField, dmText.value);
+      renderTopStats();
+    }
+  });
+
+  function createEmbers() {
+    const container = document.getElementById("embers");
+    for (let i = 0; i < 22; i += 1) {
+      const particle = document.createElement("span");
+      particle.className = "ember";
+      const size = 1.5 + Math.random() * 2.4;
+      particle.style.left = `${Math.random() * 100}%`;
+      particle.style.bottom = `${-10 - Math.random() * 20}%`;
+      particle.style.width = `${size}px`;
+      particle.style.height = `${size}px`;
+      particle.style.setProperty("--drift", `${Math.round(-60 + Math.random() * 120)}px`);
+      particle.style.animationDuration = `${7 + Math.random() * 6}s`;
+      particle.style.animationDelay = `${Math.random() * 8}s`;
+      container.appendChild(particle);
+    }
+  }
+
+  createEmbers();
+  renderAll();
+})();
+</script>
+</body>
+</html>
