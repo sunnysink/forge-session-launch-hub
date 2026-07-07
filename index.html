@@ -414,6 +414,11 @@
   .card.mauve::before { background: linear-gradient(180deg, var(--mauve-lt), var(--mauve)); }
   .card.gold::before { background: linear-gradient(180deg, var(--gold), var(--copper)); }
 
+  .jump-highlight {
+    outline: 2px solid rgba(226,184,132,0.85);
+    box-shadow: var(--shadow), 0 0 0 4px rgba(198,149,92,0.14), var(--glow-copper);
+  }
+
   .section-heading {
     display: flex;
     align-items: center;
@@ -602,6 +607,13 @@
     flex-wrap: wrap;
     gap: 7px;
     justify-content: flex-end;
+  }
+
+  .task-link-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 9px;
   }
 
   .slot-grid {
@@ -956,6 +968,19 @@
     font-family: var(--serif);
     font-size: 1.05rem;
     font-style: italic;
+  }
+
+  .ref-list {
+    display: grid;
+    gap: 9px;
+    margin: 12px 0 0;
+    padding-left: 20px;
+    color: var(--ink-dim);
+    line-height: 1.55;
+  }
+
+  .ref-list b {
+    color: var(--copper-lt);
   }
 
   .toast {
@@ -2048,6 +2073,75 @@ Include the small supporting text "The Forge Session bonus closes today." under 
 Include @SoulForgedFounders at the bottom of the graphic.`
   };
 
+  const references = [
+    {
+      id: "flow",
+      title: "How To Move Through The Command Center",
+      html: `<div class="quote-block">Start in Today. Use the task links to jump into the exact Runway task or Post Bank item you need. Mark posts Published in the Post Bank when they go live, then use Unpublished Only to see what is still left.</div>
+      <ul class="ref-list">
+        <li><b>Today:</b> the immediate work and today's attached copy kit.</li>
+        <li><b>Runway:</b> the full 14-day plan with the same tasks in context.</li>
+        <li><b>Post Bank:</b> the actual drafts, captions, image prompts, status dropdowns, and export tools.</li>
+        <li><b>DM Tracker:</b> the warm DM sprint and engaged lead follow-ups.</li>
+        <li><b>Metrics:</b> booking link, Skool link, bonus count, revenue, and launch numbers.</li>
+      </ul>`
+    },
+    {
+      id: "offer",
+      title: "Forge Session Offer Snapshot",
+      html: `<div class="quote-block">The Forge Session is a 40-minute Zoom for spiritual business owners who need clearer language for their content, offers, bio, sales page, or next invitation.</div>
+      <ul class="ref-list">
+        <li><b>SFF member price:</b> $47. That is $50 off the public rate.</li>
+        <li><b>Public price:</b> $97.</li>
+        <li><b>Launch bonus:</b> first 5 bookings get 10 done-for-you social posts built from the session language.</li>
+        <li><b>Booking link:</b> http://forgesession.sunnysink.com/</li>
+        <li><b>Core promise:</b> your transformation, your people, and your words pulled into language you can use immediately.</li>
+      </ul>`
+    },
+    {
+      id: "skool",
+      title: "Skool Cadence",
+      html: `<div class="quote-block">Skool stays light. The launch only touches the community three times so the room does not feel over-promoted.</div>
+      <ul class="ref-list">
+        <li><b>July 2:</b> launch announcement.</li>
+        <li><b>July 8:</b> midpoint fit-check.</li>
+        <li><b>July 14:</b> final gentle reminder.</li>
+        <li>Everything else lives mostly on Instagram/Facebook, email, stories/reels, DMs, or YouTube.</li>
+      </ul>`
+    },
+    {
+      id: "caption",
+      title: "Instagram / Facebook Caption Rules",
+      html: `<ul class="ref-list">
+        <li>Start with a hook that is different from the visual.</li>
+        <li>Add a lazy CTA early, such as "Save this post."</li>
+        <li>Use line breaks so the caption is easy to skim.</li>
+        <li>Include 3 to 5 SEO keywords naturally.</li>
+        <li>Put the main CTA before the secondary CTA.</li>
+        <li>Add a bonus tip or extra value.</li>
+        <li>Tag @SoulForgedFounders and end with relevant hashtags.</li>
+      </ul>`
+    },
+    {
+      id: "dm",
+      title: "DM Flow",
+      html: `<div class="quote-block"><b>Warm DM:</b><br>Hey [name], I just opened up The Forge Session and you came to mind. I know you have been [specific thing]. This is 40 minutes where we pull the real transformation out of your work and turn it into language you can actually use in your content and offers. Want me to send you the details?</div>
+      <div class="quote-block"><b>Engaged lead follow-up:</b><br>Hey [name], I saw your [comment on / like on / reply to] the [specific post topic] post. That one tends to hit when the message piece is the thing that has been stuck. I still have bonus spots open for The Forge Session. Want the link?</div>`
+    },
+    {
+      id: "delivery",
+      title: "After A Session",
+      html: `<ul class="ref-list">
+        <li>Save the client's clarified message and core transformation language.</li>
+        <li>Ask for a short testimonial while the session is fresh.</li>
+        <li>Build 10 social posts from the session language.</li>
+        <li>Include graphic hook, caption, and ChatGPT image prompt for each post.</li>
+        <li>Deliver within 48 business hours.</li>
+        <li>Invite the client into the next best SFF step if it is aligned.</li>
+      </ul>`
+    }
+  ];
+
 
   const defaultState = {
     checked: {},
@@ -2315,10 +2409,18 @@ Include @SoulForgedFounders at the bottom of the graphic.`
     return index === 0 || days[index - 1].phase !== day.phase;
   }
 
+  function taskDomId(scope, taskId) {
+    return `task-${scope}-${taskId}`;
+  }
+
+  function assetDomId(assetId) {
+    return `post-bank-${assetId}`;
+  }
+
   function renderDayCard(day, scope) {
     const complete = day.tasks.filter(isTaskDone).length;
     return `
-      <article class="card day-card ${day.phase.includes("Delivery") ? "mauve" : ""}">
+      <article class="card day-card ${day.phase.includes("Delivery") ? "mauve" : ""}" id="day-${escapeAttr(scope)}-${escapeAttr(String(day.day))}">
         <div class="day-head">
           <div>
             <div class="day-title">
@@ -2344,7 +2446,7 @@ Include @SoulForgedFounders at the bottom of the graphic.`
     const dmSet = task.dmSet ? dmSets.find(item => item.id === task.dmSet) : null;
     const dmProgress = dmSet ? `${dmCount(dmSet.id, "sent")}/${dmSet.target} sent` : "";
     return `
-      <div class="task ${done ? "done" : ""}">
+      <div class="task ${done ? "done" : ""}" id="${escapeAttr(taskDomId(scope, task.id))}">
         <input type="checkbox" aria-label="Mark ${escapeAttr(task.title)} complete" data-task-id="${escapeAttr(task.id)}" ${done ? "checked" : ""}>
         <div class="task-copy">
           <div class="task-title">
@@ -2353,6 +2455,11 @@ Include @SoulForgedFounders at the bottom of the graphic.`
           </div>
           <p>${escapeHtml(task.detail)}</p>
           ${dmSet ? `<p class="small mono">${escapeHtml(dmProgress)}</p>` : ""}
+          <div class="task-link-row">
+            ${scope === "today" ? `<button class="copy-btn" type="button" data-open-runway-task="${escapeAttr(task.id)}">Open in Runway</button>` : ""}
+            ${asset ? `<button class="copy-btn" type="button" data-open-asset="${escapeAttr(asset.id)}">Open Post</button>` : ""}
+            ${dmSet ? `<button class="copy-btn" type="button" data-open-dm>Open DM Tracker</button>` : ""}
+          </div>
         </div>
         <div class="task-actions">
           ${asset ? `<button class="copy-btn" data-copy-asset="${escapeAttr(asset.id)}">Copy Draft</button>` : ""}
@@ -2387,6 +2494,7 @@ Include @SoulForgedFounders at the bottom of the graphic.`
         <b>${escapeHtml(asset.title)}</b><br>
         <span>${escapeHtml(asset.channel)} | ${escapeHtml(status)}</span><br>
         ${hook ? `<span class="small">Graphic hook: ${escapeHtml(hook)}</span><br>` : ""}
+        <button class="copy-btn" style="margin-top:8px" type="button" data-open-asset="${escapeAttr(asset.id)}">Open Post</button>
         <button class="copy-btn" style="margin-top:8px" data-copy-asset="${escapeAttr(asset.id)}">Copy Draft</button>
         ${asset.socialBody ? `<button class="copy-btn" style="margin-top:8px" data-copy-social="${escapeAttr(asset.id)}">Copy IG/FB Caption</button>` : ""}
         ${imagePrompt ? `<button class="copy-btn" style="margin-top:8px" data-copy-image-prompt="${escapeAttr(asset.id)}">Copy Image Prompt</button>` : ""}
@@ -2440,7 +2548,7 @@ Include @SoulForgedFounders at the bottom of the graphic.`
       const imagePrompt = getImagePrompt(asset.id);
       const hook = getGraphicHook(asset.id);
       return `
-        <article class="card asset-card${isPublished ? " published" : ""}">
+        <article class="card asset-card${isPublished ? " published" : ""}" id="${escapeAttr(assetDomId(asset.id))}">
           <h3><span>${escapeHtml(asset.title)}</span>${isPublished ? `<span class="published-check" title="Published" aria-label="Published">✓</span>` : ""}</h3>
           <div class="asset-meta">
             <span class="tag priority">${escapeHtml(asset.channel)}</span>
@@ -2548,7 +2656,18 @@ Include @SoulForgedFounders at the bottom of the graphic.`
   }
 
   function renderReferences() {
-    document.getElementById("reference-sections").innerHTML = references.map((ref, index) => `
+    const referenceItems = typeof references !== "undefined" && Array.isArray(references) ? references : [];
+    const container = document.getElementById("reference-sections");
+    if (!referenceItems.length) {
+      container.innerHTML = `
+        <div class="card">
+          <h2>Reference</h2>
+          <p class="muted">The reference notes are not available in this version. The main workflow still runs through Today, Runway, Post Bank, DM Tracker, and Metrics.</p>
+        </div>
+      `;
+      return;
+    }
+    container.innerHTML = referenceItems.map((ref, index) => `
       <div class="collapsible">
         <button class="collapsible-trigger" aria-expanded="${index === 0 ? "true" : "false"}" aria-controls="ref-${escapeAttr(ref.id)}" id="ref-trigger-${escapeAttr(ref.id)}">
           <span>${escapeHtml(ref.title)}</span>
@@ -2578,6 +2697,39 @@ Include @SoulForgedFounders at the bottom of the graphic.`
     });
     document.querySelectorAll(".panel").forEach(panel => panel.classList.remove("active"));
     document.getElementById(`panel-${tabName}`).classList.add("active");
+  }
+
+  function highlightElement(element) {
+    if (!element) return;
+    element.classList.add("jump-highlight");
+    element.scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(() => element.classList.remove("jump-highlight"), 1800);
+  }
+
+  function jumpToElement(id) {
+    setTimeout(() => highlightElement(document.getElementById(id)), 40);
+  }
+
+  function openPostBankAsset(assetId) {
+    state.filter = "All";
+    state.showUnpublishedOnly = false;
+    saveState();
+    setTab("content");
+    renderAssets();
+    jumpToElement(assetDomId(assetId));
+    toast("Opened Post Bank item");
+  }
+
+  function openRunwayTask(taskId) {
+    setTab("runway");
+    jumpToElement(taskDomId("runway", taskId));
+    toast("Opened Runway task");
+  }
+
+  function openDMTracker() {
+    setTab("dms");
+    jumpToElement("panel-dms");
+    toast("Opened DM Tracker");
   }
 
   function copyAsset(assetId, button) {
@@ -2752,6 +2904,24 @@ Include @SoulForgedFounders at the bottom of the graphic.`
       state.showUnpublishedOnly = !state.showUnpublishedOnly;
       saveState();
       renderAssets();
+      return;
+    }
+
+    const openAsset = event.target.closest("[data-open-asset]");
+    if (openAsset) {
+      openPostBankAsset(openAsset.dataset.openAsset);
+      return;
+    }
+
+    const openRunway = event.target.closest("[data-open-runway-task]");
+    if (openRunway) {
+      openRunwayTask(openRunway.dataset.openRunwayTask);
+      return;
+    }
+
+    const openDm = event.target.closest("[data-open-dm]");
+    if (openDm) {
+      openDMTracker();
       return;
     }
 
